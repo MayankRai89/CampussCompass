@@ -13,7 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/labeler@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Apply labels
+        uses: actions/labeler@v5
         with:
           repo-token: ${{ github.token }}
           configuration-path: .github/labeler.yml
