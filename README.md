@@ -162,7 +162,7 @@ We welcome contributions from everyone!
 git checkout -b feature/your-feature
 ```
 
-4. Make your changes.
+4. Make your change.
 5. Commit your changes.
 
 ```bash
