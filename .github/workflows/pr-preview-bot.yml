@@ -1,0 +1,162 @@
+name: PR Preview Bot
+
+on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  pull-requests: write
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate PR Preview
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pr = context.payload.pull_request.number;
+
+            const files = await github.paginate(
+              github.rest.pulls.listFiles,
+              {
+                owner,
+                repo,
+                pull_number: pr,
+                per_page: 100
+              }
+            );
+
+            let additions = 0;
+            let deletions = 0;
+
+            let frontend = 0;
+            let backend = 0;
+            let docs = 0;
+            let tests = 0;
+            let githubFiles = 0;
+            let other = 0;
+
+            for (const file of files) {
+              additions += file.additions;
+              deletions += file.deletions;
+
+              const path = file.filename.toLowerCase();
+
+              if (path.startsWith("frontend/")) {
+                frontend++;
+              } else if (path.startsWith("backend/")) {
+                backend++;
+              } else if (path.startsWith(".github/")) {
+                githubFiles++;
+              } else if (
+                path.includes("test") ||
+                path.includes("__tests__")
+              ) {
+                tests++;
+              } else if (
+                path.endsWith(".md") ||
+                path.startsWith("docs/")
+              ) {
+                docs++;
+              } else {
+                other++;
+              }
+            }
+
+            const totalFiles = files.length;
+            const totalChanges = additions + deletions;
+
+            let size = "🟢 Small";
+            if (totalChanges > 200) size = "🟡 Medium";
+            if (totalChanges > 500) size = "🟠 Large";
+            if (totalChanges > 1000) size = "🔴 Very Large";
+
+            const reviewTime = Math.max(5, Math.ceil(totalChanges / 40));
+
+            let body =
+              `## 📋 Pull Request Preview
+              
+              ### 📊 Summary
+              
+              | Metric | Value |
+              | ------ | ----: |
+              | Files Changed | ${totalFiles} |
+              | Additions | +${additions} |
+              | Deletions | -${deletions} |
+              | Total Changes | ${totalChanges} |
+              | PR Size | ${size} |
+              
+              ### 📂 File Breakdown
+              
+              | Category | Files |
+              | -------- | ----: |
+              | 🎨 Frontend | ${frontend} |
+              | ⚙️ Backend | ${backend} |
+              | 🧪 Tests | ${tests} |
+              | 📚 Documentation | ${docs} |
+              | 🤖 GitHub Actions | ${githubFiles} |
+              | 📦 Other | ${other} |
+              
+              ### ⏱️ Estimated Review Time
+              
+              **${reviewTime} minute(s)**
+              
+              ### ✅ Reviewer Checklist
+              
+              - [ ] Linked issue
+              - [ ] Code follows project guidelines
+              - [ ] Tests added/updated (if required)
+              - [ ] Documentation updated (if required)
+              - [ ] CI passes
+              `;
+              
+                          if (totalChanges > 1000) {
+                            body += `
+              
+              ### ⚠️ Large Pull Request
+              
+              This PR changes **${totalChanges}** lines.
+              
+              Consider splitting it into smaller pull requests if possible.
+              `;
+                          }
+              
+                          body += `
+              
+              ---
+              *Generated automatically by the PR Preview Bot 🤖*`;
+              
+                          const comments = await github.rest.issues.listComments({
+                            owner,
+                            repo,
+                            issue_number: pr
+                          });
+              
+                          const existing = comments.data.find(
+                            c =>
+                              c.user.type === "Bot" &&
+                              c.body.includes("Generated automatically by the PR Preview Bot")
+                          );
+              
+                          if (existing) {
+                            await github.rest.issues.updateComment({
+                              owner,
+                              repo,
+                              comment_id: existing.id,
+                              body
+                            });
+                          } else {
+                            await github.rest.issues.createComment({
+                              owner,
+                              repo,
+                              issue_number: pr,
+                              body
+                            });
+                          }
