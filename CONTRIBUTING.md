@@ -72,6 +72,10 @@ npm run dev
 
 ```text
 CampussCompass/
+# 📂 Project Structure
+
+```text
+CampussCompass/
 ├── .github/       # GitHub workflows and templates
 ├── api/           # API-related files
 ├── config/        # Configuration files
