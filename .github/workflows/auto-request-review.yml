@@ -27,8 +27,8 @@ jobs:
 
             // Change these usernames
             const reviewers = [
-              "maintainer1",
-              "maintainer2",
+              "arpit2006",
+              "arpitshirbhate",
               "collaborator1",
               "collaborator2"
             ];
