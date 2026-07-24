@@ -1,0 +1,56 @@
+name: Auto Request Review
+
+on:
+  pull_request:
+    types:
+      - opened
+      - ready_for_review
+      - reopened
+      - synchronize
+
+permissions:
+  pull-requests: write
+  contents: read
+
+jobs:
+  request-review:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Request Reviewers
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const pull_number = context.payload.pull_request.number;
+
+            // Change these usernames
+            const reviewers = [
+              "maintainer1",
+              "maintainer2",
+              "collaborator1",
+              "collaborator2"
+            ];
+
+            // Remove PR author from reviewer list
+            const author = context.payload.pull_request.user.login;
+            const filtered = reviewers.filter(r => r !== author);
+
+            if (filtered.length === 0) {
+              console.log("No reviewers to request.");
+              return;
+            }
+
+            try {
+              await github.rest.pulls.requestReviewers({
+                owner,
+                repo,
+                pull_number,
+                reviewers: filtered
+              });
+
+              console.log("Review requests sent.");
+            } catch (error) {
+              console.log(error.message);
+            }
