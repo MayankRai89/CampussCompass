@@ -1,0 +1,62 @@
+name: Issue Assignment Labels
+
+on:
+  issues:
+    types:
+      - opened
+      - assigned
+      - unassigned
+
+permissions:
+  issues: write
+
+jobs:
+  update-labels:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update Assignment Labels
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const labels = issue.labels.map(label => label.name);
+
+            const hasAssigned = labels.includes("assigned");
+            const hasUnassigned = labels.includes("unassigned");
+
+            const assigneeCount = issue.assignees.length;
+
+            async function addLabel(label) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issue.number,
+                labels: [label]
+              });
+            }
+
+            async function removeLabel(label) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: issue.number,
+                  name: label
+                });
+              } catch (e) {
+                // Ignore if label doesn't exist
+              }
+            }
+
+            if (assigneeCount > 0) {
+              if (!hasAssigned) {
+                await addLabel("assigned");
+              }
+              await removeLabel("unassigned");
+            } else {
+              if (!hasUnassigned) {
+                await addLabel("unassigned");
+              }
+              await removeLabel("assigned");
+            }
