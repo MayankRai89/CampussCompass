@@ -46,30 +46,26 @@
 
 ---
 
-## 🛠️ Tech Stack
-
-### Frontend
-
-* React.js
-* Tailwind CSS
+## Tech Stack
 
 ### Backend
+- Node.js
+- Express.js
 
-* Node.js
-* Express.js
+### Frontend
+- EJS (Server-side templating)
+- Vanilla CSS
 
 ### Database
+- SQLite (Development)
+- PostgreSQL (Production)
 
-* MongoDB
+### ORM
+- Sequelize
 
 ### Authentication
-
-* JWT Authentication
-
-### Other Tools
-
-* Git & GitHub
-* REST APIs
+- bcryptjs (Password hashing)
+- express-session (Session management)
 
 ---
 
