@@ -42,7 +42,7 @@
 
 *Coming Soon*
 
-> Screenshots will be added as the project evolves.
+> Screenshots will be added as the project evolve.
 
 ---
 
