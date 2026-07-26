@@ -1,0 +1,81 @@
+name: Issue Claim Reminder
+
+on:
+  issues:
+    types:
+      - opened
+
+permissions:
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Post issue claim reminder
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = [
+              "## 🚀 Welcome to CampusCompass!",
+              "",
+              "> [!IMPORTANT]",
+              "> ## 🎯 Want to work on this issue?",
+              ">",
+              "> To claim this issue, simply comment:",
+              ">",
+              "> ```",
+              "> /assign",
+              "> ```",
+              ">",
+              "> Once approved, you'll automatically be assigned.",
+              ">",
+              "> ⚠️ **Please do not start working until the issue is assigned to you.**",
+              "",
+              "---",
+              "",
+              "### 🌟 Contribution Guidelines",
+              "",
+              "- ✅ Claim **one issue at a time**.",
+              "- ✅ Wait for assignment before starting.",
+              "- ✅ Keep your pull request linked to this issue.",
+              "- ✅ Follow the project's coding standards.",
+              "",
+              "<details>",
+              "<summary>💡 First Time Contributing?</summary>",
+              "",
+              "1. 🍴 Fork the repository.",
+              "2. 🌿 Create a new branch.",
+              "3. 💻 Make your changes.",
+              "4. 📤 Open a Pull Request.",
+              "5. 🎉 Wait for review from the maintainers.",
+              "",
+              "</details>",
+              "",
+              "---",
+              "",
+              "### ❤️ Happy Coding!",
+              "",
+              "```text",
+              "  _____                                 ",
+              " / ____|                                ",
+              "| |     __ _ _ __ ___  _ __   __ _ ___  ",
+              "| |    / _` | '_ ` _ \\\\| '_ \\\\ / _` / __| ",
+              "| |___| (_| | | | | | | |_) | (_| \\\\__ \\\\ ",
+              " \\\\_____\\\\__,_|_| |_| |_| .__/ \\\\__,_|___/ ",
+              "                      | |               ",
+              "                      |_|               ",
+              "```",
+              "",
+              "⭐ **If you enjoy contributing, don't forget to Star the repository!**",
+              "",
+              "Happy Contributing! 🚀"
+            ].join("\\n");
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
