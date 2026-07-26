@@ -37,36 +37,58 @@ Make sure you have:
 
 ## Installation
 
-### 1. Fork the repository
-
-Click the **Fork** button on GitHub.
-
-### 2. Clone your fork
+### Linux/macOS
 
 ```bash
-git clone https://github.com/YOUR-GITHUB-USERNAME/CampussCompass.git
-cd CampussCompass
-```
+git clone <repository-url>
+cd <repository-name>
 
-### 3. Install dependencies
-
-```bash
-npm install
-```
-
-### 4. Create environment variables
-
-```bash
 cp .env.example .env
-```
 
-### 5. Start the development server
-
-```bash
+npm install
 npm run dev
 ```
 
----
+### Windows (PowerShell)
+
+```powershell
+git clone <repository-url>
+cd <repository-name>
+
+Copy-Item .env.example .env
+
+npm install
+npm run dev
+```
+
+Alternatively, Command Prompt users can run:
+
+```cmd
+copy .env.example .env
+```
+
+### PowerShell Execution Policy
+
+Some Windows users may encounter an error similar to:
+
+```text
+UnauthorizedAccess
+running scripts is disabled on this system
+```
+
+To allow npm scripts, run:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+If you prefer not to modify the execution policy, you can start the application directly with:
+
+```bash
+node app.js
+```
+
+
 
 # 📂 Project Structure
 
