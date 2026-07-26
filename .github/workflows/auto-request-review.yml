@@ -1,16 +1,16 @@
 name: Auto Request Review
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
-      - ready_for_review
       - reopened
+      - ready_for_review
       - synchronize
 
 permissions:
-  pull-requests: write
   contents: read
+  pull-requests: write
 
 jobs:
   request-review:
@@ -25,32 +25,27 @@ jobs:
             const repo = context.repo.repo;
             const pull_number = context.payload.pull_request.number;
 
-            // Change these usernames
+            // Replace with actual GitHub usernames
             const reviewers = [
-              "arpit2006",
-              "arpitshirbhate",
-              "collaborator1",
-              "collaborator2"
+              "arpit2006"
             ];
 
-            // Remove PR author from reviewer list
             const author = context.payload.pull_request.user.login;
-            const filtered = reviewers.filter(r => r !== author);
+
+            const filtered = reviewers.filter(
+              reviewer => reviewer.toLowerCase() !== author.toLowerCase()
+            );
 
             if (filtered.length === 0) {
               console.log("No reviewers to request.");
               return;
             }
 
-            try {
-              await github.rest.pulls.requestReviewers({
-                owner,
-                repo,
-                pull_number,
-                reviewers: filtered
-              });
+            await github.rest.pulls.requestReviewers({
+              owner,
+              repo,
+              pull_number,
+              reviewers: filtered
+            });
 
-              console.log("Review requests sent.");
-            } catch (error) {
-              console.log(error.message);
-            }
+            console.log(`Requested review from: ${filtered.join(", ")}`);
