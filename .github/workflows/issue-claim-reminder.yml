@@ -17,65 +17,54 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const body = [
-              "## 🚀 Welcome to CampusCompass!",
-              "",
-              "> [!IMPORTANT]",
-              "> ## 🎯 Want to work on this issue?",
-              ">",
-              "> To claim this issue, simply comment:",
-              ">",
-              "> ```",
-              "> /assign",
-              "> ```",
-              ">",
-              "> Once approved, you'll automatically be assigned.",
-              ">",
-              "> ⚠️ **Please do not start working until the issue is assigned to you.**",
-              "",
-              "---",
-              "",
-              "### 🌟 Contribution Guidelines",
-              "",
-              "- ✅ Claim **one issue at a time**.",
-              "- ✅ Wait for assignment before starting.",
-              "- ✅ Keep your pull request linked to this issue.",
-              "- ✅ Follow the project's coding standards.",
-              "",
-              "<details>",
-              "<summary>💡 First Time Contributing?</summary>",
-              "",
-              "1. 🍴 Fork the repository.",
-              "2. 🌿 Create a new branch.",
-              "3. 💻 Make your changes.",
-              "4. 📤 Open a Pull Request.",
-              "5. 🎉 Wait for review from the maintainers.",
-              "",
-              "</details>",
-              "",
-              "---",
-              "",
-              "### ❤️ Happy Coding!",
-              "",
-              "```text",
-              "  _____                                 ",
-              " / ____|                                ",
-              "| |     __ _ _ __ ___  _ __   __ _ ___  ",
-              "| |    / _` | '_ ` _ \\\\| '_ \\\\ / _` / __| ",
-              "| |___| (_| | | | | | | |_) | (_| \\\\__ \\\\ ",
-              " \\\\_____\\\\__,_|_| |_| |_| .__/ \\\\__,_|___/ ",
-              "                      | |               ",
-              "                      |_|               ",
-              "```",
-              "",
-              "⭐ **If you enjoy contributing, don't forget to Star the repository!**",
-              "",
-              "Happy Contributing! 🚀"
-            ].join("\\n");
+            const body = `
+            # 🚀 Welcome to CampusCompass!
+
+            ## 🎯 Want to work on this issue?
+
+            To claim this issue, simply comment:
+
+            \`\`\`
+            /assign
+            \`\`\`
+
+            > ⚠️ **Please do not start working until the issue has been assigned to you.**
+
+            ---
+
+            ## 📋 Contribution Guidelines
+
+            | ✅ Do | ❌ Don't |
+            |------|----------|
+            | Claim one issue at a time | Work without being assigned |
+            | Wait for assignment | Submit unrelated changes |
+            | Link your PR to this issue | Create duplicate PRs |
+            | Follow project guidelines | Ignore lint/tests |
+
+            <details>
+            <summary>💡 First Time Contributing?</summary>
+
+            1. 🍴 Fork the repository
+            2. 🌿 Create a new branch
+            3. 💻 Make your changes
+            4. ✅ Test your changes
+            5. 📤 Open a Pull Request
+            6. 🎉 Wait for review from the maintainers
+
+            </details>
+
+            ---
+
+            ## 🌟 Support the Project
+
+            If you enjoy contributing, please consider giving this repository a ⭐.
+
+            Happy Contributing! 🚀
+            `;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: body
+              body
             });
