@@ -33,7 +33,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
           max-failures: 5
-
           require-description: true
           require-linked-issue: true
           require-pr-template: true
@@ -186,7 +185,7 @@ jobs:
                 ]
               });
             } catch (e) {
-              console.log("Labels already exist or couldn't be added.");
+              console.log("Labels could not be added.");
             }
 
             const marker = "<!-- vibecode-detection -->";
@@ -205,5 +204,40 @@ jobs:
               comment.body.includes(marker)
             );
 
-            const body = `
-                
+            const body = `${marker}
+
+            ## ⚠️ Suspicious Generated Code Detected
+
+            This PR contains patterns commonly associated with **low-quality AI-generated submissions**.
+
+            ### 🔍 Detected Signals
+
+            ${reasons.map(r => `- ${r}`).join("\n")}
+
+            ---
+
+            This PR has been **flagged for manual review**.
+
+            This is **not an automatic rejection**. A maintainer will review the changes before making a decision.
+
+            ---
+            🤖 *Generated automatically by PR Quality Guard*
+            `;
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr,
+                body
+              });
+            }
+
+            console.log("Heuristic detection completed.");
