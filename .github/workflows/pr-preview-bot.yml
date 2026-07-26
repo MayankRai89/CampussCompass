@@ -9,15 +9,16 @@ on:
 
 permissions:
   contents: read
+  pull-requests: read
   issues: write
-  pull-requests: write
 
 jobs:
   preview:
+    name: Generate PR Preview
     runs-on: ubuntu-latest
 
     steps:
-      - name: Generate PR Preview
+      - name: Generate Preview Comment
         uses: actions/github-script@v7
         with:
           script: |
@@ -81,83 +82,88 @@ jobs:
 
             const reviewTime = Math.max(5, Math.ceil(totalChanges / 40));
 
-            let body = `## 📋 Pull Request Preview
+            let body = `# 📋 Pull Request Preview
 
-              ### 📊 Summary
-              
-              | Metric | Value |
-              | ------ | ----: |
-              | 📄 Files Changed | ${totalFiles} |
-              | ➕ Additions | +${additions} |
-              | ➖ Deletions | -${deletions} |
-              | 🔄 Total Changes | ${totalChanges} |
-              | 📦 PR Size | ${size} |
-              
-              ### 📂 File Breakdown
-              
-              | Category | Files |
-              | -------- | ----: |
-              | 🎨 Frontend | ${frontend} |
-              | ⚙️ Backend | ${backend} |
-              | 🧪 Tests | ${tests} |
-              | 📚 Documentation | ${docs} |
-              | 🤖 GitHub Actions | ${githubFiles} |
-              | 📦 Other | ${other} |
-              
-              ### ⏱️ Estimated Review Time
-              
-              **${reviewTime} minute(s)**
-              
-              ### ✅ Reviewer Checklist
-              
-              - [ ] Linked issue
-              - [ ] Code follows project guidelines
-              - [ ] Tests added/updated (if required)
-              - [ ] Documentation updated (if required)
-              - [ ] CI passes
-              `;
-              
-                          if (totalChanges > 1000) {
-                            body += `
-              
-              ### ⚠️ Large Pull Request
-              
-              This PR changes **${totalChanges}** lines.
-              
-              Please consider splitting it into smaller pull requests if possible.
-              `;
-                          }
-              
-                          body += `
-              
-              ---
-              
-              🤖 *Generated automatically by the **PR Preview Bot***
-              `;
-              
-                          const { data: comments } = await github.rest.issues.listComments({
-                            owner,
-                            repo,
-                            issue_number: pr
-                          });
-              
-                          const existing = comments.find(comment =>
-                            comment.user.type === "Bot" &&
-                            comment.body.includes("PR Preview Bot")
-                          );
-              
-                          if (existing) {
-                            await github.rest.issues.updateComment({
-                              owner,
-                              repo,
-                              comment_id: existing.id,
-                              body
-                            });
-                          } else {
-                            await github.rest.issues.createComment({
-                              owner,
-                              repo,
-                              issue_number: pr,
-                              body
-                            });
-                          }
+            ## 📊 Summary
+
+            | Metric | Value |
+            | ------ | ----: |
+            | 📄 Files Changed | ${totalFiles} |
+            | ➕ Additions | +${additions} |
+            | ➖ Deletions | -${deletions} |
+            | 🔄 Total Changes | ${totalChanges} |
+            | 📦 PR Size | ${size} |
+
+            ---
+
+            ## 📂 File Breakdown
+
+            | Category | Files |
+            | -------- | ----: |
+            | 🎨 Frontend | ${frontend} |
+            | ⚙️ Backend | ${backend} |
+            | 🧪 Tests | ${tests} |
+            | 📚 Documentation | ${docs} |
+            | 🤖 GitHub Actions | ${githubFiles} |
+            | 📦 Other | ${other} |
+
+            ---
+
+            ## ⏱️ Estimated Review Time
+
+            **${reviewTime} minute(s)**
+
+            ---
+
+            ## ✅ Reviewer Checklist
+
+            - [ ] Linked issue
+            - [ ] Code follows project guidelines
+            - [ ] Tests added/updated (if required)
+            - [ ] Documentation updated (if required)
+            - [ ] CI passes`;
+
+            if (totalChanges > 1000) {
+              body += `
+
+            ---
+
+            ## ⚠️ Large Pull Request
+
+            This PR contains **${totalChanges}** changed lines.
+
+            Consider splitting it into smaller pull requests for easier review.`;
+            }
+
+            body += `
+
+            ---
+
+            🤖 *Generated automatically by the **PR Preview Bot***`;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: pr
+            });
+
+            const existing = comments.find(comment =>
+              comment.user.type === "Bot" &&
+              comment.body.includes("PR Preview Bot")
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr,
+                body
+              });
+            }
