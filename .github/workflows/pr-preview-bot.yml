@@ -1,13 +1,15 @@
 name: PR Preview Bot
 
 on:
-  pull_request:
+  pull_request_target:
     types:
       - opened
       - synchronize
       - reopened
 
 permissions:
+  contents: read
+  issues: write
   pull-requests: write
 
 jobs:
@@ -35,7 +37,6 @@ jobs:
 
             let additions = 0;
             let deletions = 0;
-
             let frontend = 0;
             let backend = 0;
             let docs = 0;
@@ -80,18 +81,17 @@ jobs:
 
             const reviewTime = Math.max(5, Math.ceil(totalChanges / 40));
 
-            let body =
-              `## 📋 Pull Request Preview
-              
+            let body = `## 📋 Pull Request Preview
+
               ### 📊 Summary
               
               | Metric | Value |
               | ------ | ----: |
-              | Files Changed | ${totalFiles} |
-              | Additions | +${additions} |
-              | Deletions | -${deletions} |
-              | Total Changes | ${totalChanges} |
-              | PR Size | ${size} |
+              | 📄 Files Changed | ${totalFiles} |
+              | ➕ Additions | +${additions} |
+              | ➖ Deletions | -${deletions} |
+              | 🔄 Total Changes | ${totalChanges} |
+              | 📦 PR Size | ${size} |
               
               ### 📂 File Breakdown
               
@@ -124,25 +124,26 @@ jobs:
               
               This PR changes **${totalChanges}** lines.
               
-              Consider splitting it into smaller pull requests if possible.
+              Please consider splitting it into smaller pull requests if possible.
               `;
                           }
               
                           body += `
               
               ---
-              *Generated automatically by the PR Preview Bot 🤖*`;
               
-                          const comments = await github.rest.issues.listComments({
+              🤖 *Generated automatically by the **PR Preview Bot***
+              `;
+              
+                          const { data: comments } = await github.rest.issues.listComments({
                             owner,
                             repo,
                             issue_number: pr
                           });
               
-                          const existing = comments.data.find(
-                            c =>
-                              c.user.type === "Bot" &&
-                              c.body.includes("Generated automatically by the PR Preview Bot")
+                          const existing = comments.find(comment =>
+                            comment.user.type === "Bot" &&
+                            comment.body.includes("PR Preview Bot")
                           );
               
                           if (existing) {
