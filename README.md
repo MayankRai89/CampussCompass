@@ -24,7 +24,7 @@
 
 ---
 
-## 📸 Screenshots
+## 📸 Screenshot
 
 ### Landing Page
 
