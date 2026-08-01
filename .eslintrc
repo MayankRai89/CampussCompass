@@ -37,10 +37,10 @@
         "sourceType": "script"
       },
       "rules": {
-        "no-console": "off",
-        "quotes": "off",
         "comma-dangle": "off",
-        "prefer-const": "off"
+        "no-console": "off",
+        "prefer-const": "off",
+        "quotes": "off"
       }
     },
     {
