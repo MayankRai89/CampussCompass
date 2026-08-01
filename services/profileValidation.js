@@ -20,9 +20,12 @@ const TEXT_LIMITS = {
   branch: 100
 };
 
-const normalizeText = value => String(value || '').trim().replace(/\s+/g, ' ');
+const normalizeText = value => String(value || '')
+  .replace(/<[^>]*>/g, '')
+  .trim()
+  .replace(/\s+/g, ' ');
 
-const parseNumber = value => {
+const parseOptionalNumber = value => {
   if (value === undefined || value === null || value === '') {
     return null;
   }
@@ -31,14 +34,29 @@ const parseNumber = value => {
   return Number.isFinite(parsed) ? parsed : Number.NaN;
 };
 
+const parseOptionalWholeNumber = value => {
+  if (value === undefined || value === null || value === '') {
+    return null;
+  }
+
+  const normalizedValue = String(value).trim();
+  if (!/^\d+$/.test(normalizedValue)) {
+    return Number.NaN;
+  }
+
+  return Number(normalizedValue);
+};
+
 const normalizeList = value => {
   if (!value) return [];
 
   const seen = new Set();
   const normalizedItems = [];
+  const rawItems = Array.isArray(value)
+    ? value.flatMap(item => String(item).split(','))
+    : String(value).split(',');
 
-  String(value)
-    .split(',')
+  rawItems
     .map(item => normalizeText(item))
     .filter(Boolean)
     .forEach(item => {
@@ -72,8 +90,8 @@ const validateProfileInput = input => {
     branch: normalizeText(input.branch),
     currentYear: normalizeText(input.currentYear),
     careerGoal: normalizeText(input.careerGoal),
-    cgpa: parseNumber(input.cgpa),
-    dailyStudyHours: parseNumber(input.dailyStudyHours),
+    cgpa: parseOptionalNumber(input.cgpa),
+    dailyStudyHours: parseOptionalWholeNumber(input.dailyStudyHours),
     skills: normalizeList(input.skills),
     interests: normalizeList(input.interests)
   };
@@ -98,7 +116,7 @@ const validateProfileInput = input => {
     Number.isNaN(profile.dailyStudyHours) ||
     (
       profile.dailyStudyHours !== null &&
-      (!Number.isInteger(profile.dailyStudyHours) || profile.dailyStudyHours < 0 || profile.dailyStudyHours > 24)
+      (profile.dailyStudyHours < 0 || profile.dailyStudyHours > 24)
     )
   ) {
     errors.push('Daily study hours must be a whole number between 0 and 24.');

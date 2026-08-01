@@ -40,7 +40,7 @@ exports.postProfileSetup = async (req, res) => {
   });
 
   if (!validation.isValid) {
-    req.session.error = validation.errors[0];
+    req.session.error = validation.errors.join(' ');
     return res.redirect('/profile/setup');
   }
 
@@ -117,7 +117,7 @@ exports.postProfileUpdate = async (req, res) => {
   });
 
   if (!validation.isValid) {
-    req.session.error = validation.errors[0];
+    req.session.error = validation.errors.join(' ');
     return res.redirect('/profile');
   }
 
