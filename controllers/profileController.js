@@ -4,7 +4,7 @@ const User = require('../models/User');
 exports.getProfileSetup = (req, res) => {
   const error = req.session.error;
   delete req.session.error;
-  
+
   res.render('profile-setup', {
     error,
     title: 'Setup Profile - CampusCompass',
