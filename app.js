@@ -4,6 +4,7 @@ const session = require('express-session');
 const dotenv = require('dotenv');
 const crypto = require('crypto');
 const { connectDB, sequelize } = require('./config/db');
+const { csrfProtection } = require('./services/csrfProtection');
 
 // Load environment variables from .env file
 dotenv.config();
@@ -70,25 +71,7 @@ app.use(
 );
 
 // CSRF Protection Middleware
-app.use((req, res, next) => {
-  // Ensure token exists in session
-  if (!req.session.csrfToken) {
-    req.session.csrfToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-  }
-
-  // Expose to templates
-  res.locals.csrfToken = req.session.csrfToken;
-
-  // Verify token on state-changing requests
-  const stateChangingMethods = ['POST', 'PUT', 'DELETE', 'PATCH'];
-  if (stateChangingMethods.includes(req.method)) {
-    const requestToken = req.body._csrf || req.headers['x-csrf-token'] || req.query._csrf;
-    if (!requestToken || requestToken !== req.session.csrfToken) {
-      return res.status(403).send('Forbidden: CSRF token validation failed.');
-    }
-  }
-  next();
-});
+app.use(csrfProtection);
 
 // Global view variables middleware
 // Exposes session status to all EJS templates automatically
@@ -116,7 +99,7 @@ app.use((req, res, _next) => {
   });
 });
 
-// Start the Express Server (only if not running on Vercel serverless or tests)
+// Start the Express Server only outside Vercel serverless and test imports.
 if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
