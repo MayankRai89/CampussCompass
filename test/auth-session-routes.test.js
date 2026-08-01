@@ -86,13 +86,13 @@ const loginAs = async user => {
   const loginPage = await request('/login');
   const loginHtml = await loginPage.text();
   const csrfToken = extractCsrfToken(loginHtml);
-  const cookie = extractSessionCookie(loginPage);
+  const preLoginCookie = extractSessionCookie(loginPage);
 
   const response = await request('/login', {
     method: 'POST',
     headers: {
       'content-type': 'application/x-www-form-urlencoded',
-      cookie
+      cookie: preLoginCookie
     },
     body: new URLSearchParams({
       _csrf: csrfToken,
@@ -102,8 +102,10 @@ const loginAs = async user => {
   });
 
   assert.equal(response.status, 302);
+  const postLoginCookie = response.headers.get('set-cookie')?.split(';')[0] ?? preLoginCookie;
+
   return {
-    cookie,
+    cookie: postLoginCookie,
     location: response.headers.get('location')
   };
 };
@@ -158,6 +160,18 @@ test('users with incomplete profiles are redirected to profile setup', async () 
     assert.equal(response.status, 302, `${route} should redirect`);
     assert.equal(response.headers.get('location'), '/profile/setup');
   }
+});
+
+test('users with incomplete profiles can log out', async () => {
+  const user = await createUser({ isProfileComplete: false });
+  const session = await loginAs(user);
+
+  const response = await request('/logout', {
+    headers: { cookie: session.cookie }
+  });
+
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.get('location'), '/');
 });
 
 test('users with complete profiles can access protected routes', async () => {
