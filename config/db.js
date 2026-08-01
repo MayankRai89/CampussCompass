@@ -51,7 +51,7 @@ if (process.env.DATABASE_URL) {
   if (!fs.existsSync(dbDir)) {
     fs.mkdirSync(dbDir, { recursive: true });
   }
-  const dbPath = path.join(dbDir, 'database.sqlite');
+  const dbPath = process.env.SQLITE_STORAGE || path.join(dbDir, 'database.sqlite');
   console.log(`Database File: ${dbPath}`);
 
   sequelize = new Sequelize({
