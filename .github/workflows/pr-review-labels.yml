@@ -1,0 +1,66 @@
+name: 🏷️ PR Review Labels
+
+on:
+  pull_request_review:
+    types:
+      - submitted
+
+permissions:
+  pull-requests: write
+  issues: write
+
+jobs:
+  review-labels:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Update labels based on review
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const prNumber = context.payload.pull_request.number;
+            const reviewState = context.payload.review.state;
+
+            async function addLabel(label) {
+              try {
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  labels: [label]
+                });
+              } catch (e) {
+                console.log(`Could not add ${label}`);
+              }
+            }
+
+            async function removeLabel(label) {
+              try {
+                await github.rest.issues.removeLabel({
+                  owner,
+                  repo,
+                  issue_number: prNumber,
+                  name: label
+                });
+              } catch (e) {
+                // Ignore if label doesn't exist
+              }
+            }
+
+            if (reviewState === "changes_requested") {
+              await addLabel("changes-required");
+              await removeLabel("under-review");
+              await removeLabel("approved");
+              await removeLabel("ready-to-merge");
+            }
+
+            if (reviewState === "approved") {
+              await removeLabel("changes-required");
+              await addLabel("approved");
+            }
+
+            if (reviewState === "commented") {
+              await addLabel("under-review");
+            }
