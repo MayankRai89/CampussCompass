@@ -18,7 +18,12 @@ const hashToken = (token) => crypto
   .digest();
 
 const safelyCompareTokens = (requestToken, sessionToken) => {
-  if (typeof requestToken !== 'string' || typeof sessionToken !== 'string') {
+  if (
+    typeof requestToken !== 'string' ||
+    !requestToken ||
+    typeof sessionToken !== 'string' ||
+    !sessionToken
+  ) {
     return false;
   }
 
