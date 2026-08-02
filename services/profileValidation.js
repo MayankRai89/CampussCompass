@@ -53,7 +53,7 @@ const normalizeList = value => {
   const seen = new Set();
   const normalizedItems = [];
   const rawItems = Array.isArray(value)
-    ? value.flatMap(item => String(item).split(','))
+    ? value
     : String(value).split(',');
 
   rawItems

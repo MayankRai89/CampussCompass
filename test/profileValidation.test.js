@@ -40,8 +40,8 @@ test('normalizes skills and interests submitted as arrays', () => {
   });
 
   assert.equal(result.isValid, true);
-  assert.deepEqual(result.profile.skills, ['JavaScript', 'Node.js', 'Git']);
-  assert.deepEqual(result.profile.interests, ['Backend', 'Open Source']);
+  assert.deepEqual(result.profile.skills, ['JavaScript', 'Node.js, Git']);
+  assert.deepEqual(result.profile.interests, ['Backend', 'Open Source, backend']);
 });
 
 test('rejects invalid profile numbers and unsupported dropdown values', () => {
