@@ -6,7 +6,7 @@ const test = require('node:test');
 
 process.env.NODE_ENV = 'test';
 process.env.SESSION_SECRET = 'test-session-secret';
-process.env.SQLITE_STORAGE = path.join(os.tmpdir(), `campuscompass-test-${process.pid}.sqlite`);
+process.env.SQLITE_DATABASE_PATH = path.join(os.tmpdir(), `campuscompass-test-${process.pid}.sqlite`);
 
 const app = require('../app');
 const { sequelize } = require('../config/db');
@@ -32,8 +32,8 @@ test.after(async () => {
     await new Promise(resolve => server.close(resolve));
   }
 
-  if (fs.existsSync(process.env.SQLITE_STORAGE)) {
-    fs.unlinkSync(process.env.SQLITE_STORAGE);
+  if (fs.existsSync(process.env.SQLITE_DATABASE_PATH)) {
+    fs.unlinkSync(process.env.SQLITE_DATABASE_PATH);
   }
 });
 
