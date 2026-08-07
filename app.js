@@ -99,14 +99,8 @@ app.use((req, res, _next) => {
   });
 });
 
-<<<<<<< HEAD
-// Start the Express Server only outside Vercel serverless and test imports.
-if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
-=======
 // Start the Express Server only when this file is run directly.
-// Tests and serverless deployments import the app without binding a port.
 if (require.main === module && !process.env.VERCEL) {
->>>>>>> 3e7a88f0cd372913e73d7d6462e373525fdfeefc
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);
