@@ -1,0 +1,112 @@
+name: ⏳ Mention Patience Reminder
+
+on:
+  issue_comment:
+    types:
+      - created
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  patience-reminder:
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, '@')
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check for owner/collaborator mention
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const comment = context.payload.comment.body;
+            const owner = context.repo.owner;
+            const mentionedUsers = comment.match(/@([a-zA-Z0-9-]+)/g) || [];
+
+            // Remove duplicates
+            const users = [...new Set(
+              mentionedUsers.map(user => user.substring(1).toLowerCase())
+            )];
+
+            if (users.length === 0) {
+              return;
+            }
+
+            let triggered = false;
+
+            for (const username of users) {
+              try {
+                const { data: permission } =
+                  await github.rest.repos.getCollaboratorPermissionLevel({
+                    owner,
+                    repo: context.repo.repo,
+                    username
+                  });
+
+                const role = permission.permission;
+
+                // Trigger for repository owner, admin, maintainer, or write access
+                if (
+                  username === owner.toLowerCase() ||
+                  role === 'admin' ||
+                  role === 'maintain' ||
+                  role === 'write'
+                ) {
+                  triggered = true;
+                  break;
+                }
+              } catch (error) {
+                console.log(`Could not check @${username}: ${error.message}`);
+              }
+            }
+
+            if (!triggered) {
+              console.log('No owner/collaborator mention detected.');
+              return;
+            }
+
+            // Avoid replying multiple times to the same comment
+            const comments =
+              await github.rest.issues.listComments({
+                owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number
+              });
+
+            const alreadyReplied = comments.data.some(
+              comment =>
+                comment.user.type === 'Bot' &&
+                comment.body.includes('Please be patient')
+            );
+
+            if (alreadyReplied) {
+              console.log('Patience reminder already posted.');
+              return;
+            }
+
+            const message = `
+            ## ⏳ Please Be Patient
+            
+            Hi @${context.payload.comment.user.login} 👋
+            
+            Please avoid repeatedly mentioning the repository owner or collaborators regarding PR approval or merging.
+            
+            Your contribution has been received and will be reviewed when a maintainer is available. **PR reviews and merges may take some time**, depending on the maintainers' workload.
+            
+            Thank you for your patience and for contributing to the project! ❤️
+            
+            > 🛠️ **Tip:** While waiting, you can check the PR feedback, improve your changes, or explore other issues in the project.
+            
+            — 🤖 **Automated Repository Bot**
+            `;
+            
+                        await github.rest.issues.createComment({
+                          owner,
+                          repo: context.repo.repo,
+                          issue_number: context.issue.number,
+                          body: message
+                        });
+            
+                        console.log('Patience reminder posted successfully.');
