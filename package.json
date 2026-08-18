@@ -12,6 +12,8 @@
     "test:smoke": "node --test test/app-smoke.test.js"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.4",
+    "@supabase/supabase-js": "^2.112.3",
     "@vercel/analytics": "^2.0.1",
     "bcryptjs": "^2.4.3",
     "dotenv": "^16.4.5",
