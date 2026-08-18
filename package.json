@@ -20,6 +20,7 @@
     "ejs": "^3.1.10",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
+    "google-auth-library": "^9.15.1",
     "pg": "^8.22.0",
     "pg-hstore": "^2.3.4",
     "sequelize": "^6.37.8",

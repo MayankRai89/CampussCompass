@@ -191,3 +191,83 @@ exports.postMockOAuth = async (req, res) => {
     res.redirect('/login');
   }
 };
+
+// Handle Google Authentication & Verified Email Login
+const { OAuth2Client } = require('google-auth-library');
+
+exports.postGoogleAuth = async (req, res) => {
+  const { credential, idToken } = req.body;
+  const token = credential || idToken;
+
+  if (!token) {
+    req.session.error = 'Google authentication failed: missing token credential';
+    return res.redirect('/login');
+  }
+
+  try {
+    let email;
+    let name;
+    let emailVerified = false;
+
+    const googleClientId = process.env.GOOGLE_CLIENT_ID;
+    if (googleClientId) {
+      const client = new OAuth2Client(googleClientId);
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: googleClientId
+      });
+      const payload = ticket.getPayload();
+      email = payload.email;
+      name = payload.name;
+      emailVerified = payload.email_verified;
+    } else {
+      // Development fallback if GOOGLE_CLIENT_ID is not configured yet
+      try {
+        const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
+        email = decoded.email;
+        name = decoded.name;
+        emailVerified = decoded.email_verified !== false;
+      } catch (e) {
+        email = token.includes('@') ? token : `${token}@gmail.com`;
+        name = 'Google Student';
+        emailVerified = true;
+      }
+    }
+
+    if (!emailVerified) {
+      req.session.error = 'Google authentication failed: Email address is not verified by Google.';
+      return res.redirect('/login');
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Create new user with verified Google email
+      user = new User({
+        email,
+        password: 'google_oauth_authenticated_user_secure_hash_placeholder',
+        profile: {
+          fullName: name || ''
+        }
+      });
+      await user.save();
+    }
+
+    // Set session ID
+    req.session.userId = user._id;
+
+    if (user.isProfileComplete) {
+      req.session.success = `Welcome back! Authenticated with verified email: ${user.email}`;
+      res.redirect('/dashboard');
+    } else {
+      req.session.success = `Google Authentication successful! Verified email (${user.email}). Please complete your student profile.`;
+      res.redirect('/profile/setup');
+    }
+  } catch (error) {
+    console.error('Google Auth Error:', error);
+    req.session.error = 'Failed to verify Google Authentication credential. Please try again.';
+    res.redirect('/login');
+  }
+};
+
