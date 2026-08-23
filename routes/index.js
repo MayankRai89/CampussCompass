@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const dashboardController = require('../controllers/dashboardController');
+const studySprintController = require('../controllers/studySprintController');
 const { ensureGuest, ensureProfileComplete } = require('./middleware');
 const {
   DEFAULT_PLAYLIST_TRACK,
@@ -17,6 +18,14 @@ router.get('/', ensureGuest, (req, res) => {
 
 // Dashboard Page
 router.get('/dashboard', ensureProfileComplete, dashboardController.getDashboard);
+
+// StudySprint AI Planner Routes
+router.get('/studysprint', ensureProfileComplete, studySprintController.getPlanner);
+router.post('/studysprint/setup', ensureProfileComplete, studySprintController.setupSprint);
+router.post('/studysprint/toggle-task', ensureProfileComplete, studySprintController.toggleTask);
+router.post('/studysprint/pause', ensureProfileComplete, studySprintController.pauseSprint);
+router.post('/studysprint/resume', ensureProfileComplete, studySprintController.resumeSprint);
+router.get('/studysprint/export-calendar', ensureProfileComplete, studySprintController.exportCalendar);
 
 // Social Connect Page
 router.get('/social', ensureProfileComplete, dashboardController.getSocial);

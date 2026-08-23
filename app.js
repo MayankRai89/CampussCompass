@@ -1,13 +1,13 @@
+const dotenv = require('dotenv');
+// Load environment variables from .env file
+dotenv.config();
+
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
-const dotenv = require('dotenv');
 const crypto = require('crypto');
 const { connectDB, sequelize } = require('./config/db');
 const { csrfProtection } = require('./services/csrfProtection');
-
-// Load environment variables from .env file
-dotenv.config();
 
 
 
