@@ -15,8 +15,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const fetchGitHubStats = async () => {
       try {
         const [starsRes, forksRes] = await Promise.all([
-          fetch("https://img.shields.io/github/stars/arpit2006/CampussCompass.json"),
-          fetch("https://img.shields.io/github/forks/arpit2006/CampussCompass.json")
+          fetch(
+            "https://img.shields.io/github/stars/arpit2006/CampussCompass.json",
+          ),
+          fetch(
+            "https://img.shields.io/github/forks/arpit2006/CampussCompass.json",
+          ),
         ]);
 
         if (!starsRes.ok || !forksRes.ok) {
@@ -25,13 +29,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
         const [starsData, forksData] = await Promise.all([
           starsRes.json(),
-          forksRes.json()
+          forksRes.json(),
         ]);
 
         const stats = {
           stars: parseInt(starsData.value || starsData.message, 10) || 4,
           forks: parseInt(forksData.value || forksData.message, 10) || 9,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
 
         localStorage.setItem(CACHE_KEY, JSON.stringify(stats));
@@ -141,7 +145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     closeBtn.addEventListener("click", () => {
       alert.style.opacity = "0";
       alert.style.transform = "translateY(-10px)";
-      alert.style.transition = "all 0.3s ease";
+      alert.style.transition = "all 0.1s ease";
       setTimeout(() => {
         alert.remove();
       }, 300);
@@ -264,34 +268,36 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- AI Agent Offline Modal Logic ---
-  const aiAgentFloatingBtn = document.getElementById('aiAgentFloatingBtn');
-  const aiAgentModal = document.getElementById('aiAgentModal');
-  const closeAiAgentModal = document.getElementById('closeAiAgentModal');
-  const dismissAiAgentModal = document.getElementById('dismissAiAgentModal');
-  const aiAgentGoToCommunityBtn = document.getElementById('aiAgentGoToCommunityBtn');
+  const aiAgentFloatingBtn = document.getElementById("aiAgentFloatingBtn");
+  const aiAgentModal = document.getElementById("aiAgentModal");
+  const closeAiAgentModal = document.getElementById("closeAiAgentModal");
+  const dismissAiAgentModal = document.getElementById("dismissAiAgentModal");
+  const aiAgentGoToCommunityBtn = document.getElementById(
+    "aiAgentGoToCommunityBtn",
+  );
 
   if (aiAgentModal && aiAgentFloatingBtn) {
-    aiAgentFloatingBtn.addEventListener('click', () => {
-      aiAgentModal.classList.add('active');
+    aiAgentFloatingBtn.addEventListener("click", () => {
+      aiAgentModal.classList.add("active");
     });
 
     const hideAiModal = () => {
-      aiAgentModal.classList.remove('active');
+      aiAgentModal.classList.remove("active");
     };
 
     if (closeAiAgentModal) {
-      closeAiAgentModal.addEventListener('click', hideAiModal);
+      closeAiAgentModal.addEventListener("click", hideAiModal);
     }
 
     if (dismissAiAgentModal) {
-      dismissAiAgentModal.addEventListener('click', hideAiModal);
+      dismissAiAgentModal.addEventListener("click", hideAiModal);
     }
 
     if (aiAgentGoToCommunityBtn) {
-      aiAgentGoToCommunityBtn.addEventListener('click', hideAiModal);
+      aiAgentGoToCommunityBtn.addEventListener("click", hideAiModal);
     }
 
-    aiAgentModal.addEventListener('click', (e) => {
+    aiAgentModal.addEventListener("click", (e) => {
       if (e.target === aiAgentModal) {
         hideAiModal();
       }
@@ -694,7 +700,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --- Auto-Dismiss Success & Error Alert Notifications ---
   const autoDismissAlerts = () => {
     const alerts = document.querySelectorAll(
-      ".alert, .alert-success, .alert-danger, .alert-dismissible"
+      ".alert, .alert-success, .alert-danger, .alert-dismissible",
     );
 
     alerts.forEach((alert) => {
@@ -704,7 +710,10 @@ document.addEventListener("DOMContentLoaded", () => {
       alert.style.position = "relative";
 
       // Add close button if not present
-      if (!alert.querySelector(".alert-close-btn") && !alert.querySelector(".btn-close")) {
+      if (
+        !alert.querySelector(".alert-close-btn") &&
+        !alert.querySelector(".btn-close")
+      ) {
         const closeBtn = document.createElement("button");
         closeBtn.type = "button";
         closeBtn.className = "alert-close-btn";
@@ -712,8 +721,12 @@ document.addEventListener("DOMContentLoaded", () => {
         closeBtn.setAttribute("aria-label", "Close notification");
         closeBtn.style.cssText =
           "background: none; border: none; font-size: 18px; font-weight: bold; cursor: pointer; color: inherit; opacity: 0.7; margin-left: auto; padding: 0 6px; line-height: 1; transition: opacity 0.2s ease;";
-        closeBtn.addEventListener("mouseover", () => { closeBtn.style.opacity = "1"; });
-        closeBtn.addEventListener("mouseout", () => { closeBtn.style.opacity = "0.7"; });
+        closeBtn.addEventListener("mouseover", () => {
+          closeBtn.style.opacity = "1";
+        });
+        closeBtn.addEventListener("mouseout", () => {
+          closeBtn.style.opacity = "0.7";
+        });
 
         closeBtn.addEventListener("click", () => {
           dismissAlert(alert);
