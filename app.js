@@ -5,6 +5,9 @@ dotenv.config();
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
+const FileStore = require('session-file-store')(session);
+const fs = require('fs');
+const SESSION_DIR = path.join(__dirname, 'sessions');
 const crypto = require('crypto');
 const { connectDB, sequelize } = require('./config/db');
 const { csrfProtection } = require('./services/csrfProtection');
@@ -63,15 +66,27 @@ if (!sessionSecret) {
   }
 }
 
+// Ensure sessions directory exists before FileStore initialises
+if (!fs.existsSync(SESSION_DIR)) {
+  fs.mkdirSync(SESSION_DIR, { recursive: true });
+}
+
 app.use(
   session({
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
+    // Persist sessions to disk so they survive server/nodemon restarts
+    store: new FileStore({
+      path: SESSION_DIR,
+      ttl: 86400,        // 1 day in seconds
+      retries: 0,
+      logFn: () => {}   // Suppress noisy file-store logs
+    }),
     cookie: {
       maxAge: 1000 * 60 * 60 * 24, // Session active for 1 day
-      secure: process.env.NODE_ENV === 'production', // Set to true in production if running over HTTPS
-      httpOnly: true // Mitigates XSS security risks
+      secure: process.env.NODE_ENV === 'production',
+      httpOnly: true
     }
   })
 );
