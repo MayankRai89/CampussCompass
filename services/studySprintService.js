@@ -104,7 +104,9 @@ function updateTaskStatus(sprintData, taskId, isCompleted) {
 
   // Streak calculation
   let streak = sprintData.streakCount || 0;
+  let maxStreak = sprintData.maxStreak || sprintData.bestStreak || streak;
   let lastActiveDate = sprintData.lastActiveDate || null;
+  let streakHistory = Array.isArray(sprintData.streakHistory) ? [...sprintData.streakHistory] : [];
 
   if (isCompleted && lastActiveDate !== todayStr) {
     const yesterday = new Date();
@@ -121,6 +123,40 @@ function updateTaskStatus(sprintData, taskId, isCompleted) {
     lastActiveDate = todayStr;
   }
 
+  if (streak > maxStreak) {
+    maxStreak = streak;
+  }
+
+  // Daily activity log in streakHistory
+  const todayTasksCompleted = updatedSchedule.filter(
+    t => t.completed && t.dateStr === todayStr
+  ).length;
+
+  const existingIdx = streakHistory.findIndex(entry => entry.date === todayStr);
+  if (isCompleted || todayTasksCompleted > 0) {
+    if (existingIdx >= 0) {
+      streakHistory[existingIdx] = {
+        ...streakHistory[existingIdx],
+        tasksCompleted: todayTasksCompleted,
+        streakCount: streak,
+        lastUpdated: new Date().toISOString()
+      };
+    } else {
+      streakHistory.push({
+        date: todayStr,
+        tasksCompleted: Math.max(1, todayTasksCompleted),
+        streakCount: streak,
+        lastUpdated: new Date().toISOString()
+      });
+    }
+  } else if (existingIdx >= 0) {
+    streakHistory[existingIdx] = {
+      ...streakHistory[existingIdx],
+      tasksCompleted: todayTasksCompleted,
+      lastUpdated: new Date().toISOString()
+    };
+  }
+
   return {
     ...sprintData,
     schedule: updatedSchedule,
@@ -128,8 +164,45 @@ function updateTaskStatus(sprintData, taskId, isCompleted) {
     totalTasks,
     progressPercent,
     streakCount: streak,
+    maxStreak,
+    streakHistory,
     lastActiveDate
   };
+}
+
+/**
+ * Returns recent N days daily tracking streak record for UI display
+ */
+function getRecentStreakRecord(sprintData, daysCount = 7) {
+  const history = Array.isArray(sprintData?.streakHistory) ? sprintData.streakHistory : [];
+  const schedule = Array.isArray(sprintData?.schedule) ? sprintData.schedule : [];
+
+  const result = [];
+  const today = new Date();
+
+  for (let i = daysCount - 1; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(today.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+
+    const historyEntry = history.find(h => h.date === dateStr);
+    const scheduledCount = schedule.filter(t => t.dateStr === dateStr).length;
+    const completedCount = historyEntry
+      ? historyEntry.tasksCompleted
+      : schedule.filter(t => t.dateStr === dateStr && t.completed).length;
+
+    result.push({
+      dateStr,
+      dayName,
+      isToday: i === 0,
+      completed: completedCount > 0,
+      tasksCompleted: completedCount,
+      scheduledTasks: scheduledCount
+    });
+  }
+
+  return result;
 }
 
 /**
@@ -233,5 +306,6 @@ module.exports = {
   updateTaskStatus,
   shiftSprintForExams,
   resumeSprint,
-  generateICalendar
+  generateICalendar,
+  getRecentStreakRecord
 };
