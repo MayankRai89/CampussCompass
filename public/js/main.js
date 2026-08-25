@@ -690,6 +690,81 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
   });
+
+  // --- Auto-Dismiss Success & Error Alert Notifications ---
+  const autoDismissAlerts = () => {
+    const alerts = document.querySelectorAll(
+      ".alert, .alert-success, .alert-danger, .alert-dismissible"
+    );
+
+    alerts.forEach((alert) => {
+      if (alert.dataset.dismissInitialized) return;
+      alert.dataset.dismissInitialized = "true";
+
+      alert.style.position = "relative";
+
+      // Add close button if not present
+      if (!alert.querySelector(".alert-close-btn") && !alert.querySelector(".btn-close")) {
+        const closeBtn = document.createElement("button");
+        closeBtn.type = "button";
+        closeBtn.className = "alert-close-btn";
+        closeBtn.innerHTML = "&times;";
+        closeBtn.setAttribute("aria-label", "Close notification");
+        closeBtn.style.cssText =
+          "background: none; border: none; font-size: 18px; font-weight: bold; cursor: pointer; color: inherit; opacity: 0.7; margin-left: auto; padding: 0 6px; line-height: 1; transition: opacity 0.2s ease;";
+        closeBtn.addEventListener("mouseover", () => { closeBtn.style.opacity = "1"; });
+        closeBtn.addEventListener("mouseout", () => { closeBtn.style.opacity = "0.7"; });
+
+        closeBtn.addEventListener("click", () => {
+          dismissAlert(alert);
+        });
+
+        alert.appendChild(closeBtn);
+      }
+
+      // Auto-dismiss timer (4 seconds)
+      let timer = setTimeout(() => {
+        dismissAlert(alert);
+      }, 4000);
+
+      // Pause timer on hover, resume on mouse leave
+      alert.addEventListener("mouseenter", () => {
+        if (timer) clearTimeout(timer);
+      });
+
+      alert.addEventListener("mouseleave", () => {
+        timer = setTimeout(() => {
+          dismissAlert(alert);
+        }, 2000);
+      });
+    });
+  };
+
+  const dismissAlert = (alert) => {
+    if (!alert || alert.classList.contains("dismissing")) return;
+    alert.classList.add("dismissing");
+
+    alert.style.transition = "all 0.35s cubic-bezier(0.4, 0, 0.2, 1)";
+    alert.style.opacity = "0";
+    alert.style.transform = "translateY(-8px)";
+
+    setTimeout(() => {
+      alert.style.maxHeight = "0px";
+      alert.style.marginBottom = "0px";
+      alert.style.paddingTop = "0px";
+      alert.style.paddingBottom = "0px";
+      alert.style.overflow = "hidden";
+      alert.style.border = "none";
+    }, 150);
+
+    setTimeout(() => {
+      if (alert.parentNode) {
+        alert.parentNode.removeChild(alert);
+      }
+    }, 400);
+  };
+
+  autoDismissAlerts();
 });
 // Global function to toggle social connection forms in the dashboard sidebar
 // eslint-disable-next-line no-unused-vars
