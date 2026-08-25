@@ -81,6 +81,9 @@ User.init(
           githubUsername: val.githubUsername || '',
           linkedinUsername: val.linkedinUsername || '',
           leetcodeUsername: val.leetcodeUsername || '',
+          friends: val.friends || [],
+          friendRequests: val.friendRequests || [],
+          chatMessages: val.chatMessages || [],
           ...val
         };
       }

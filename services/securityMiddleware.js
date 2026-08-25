@@ -7,7 +7,7 @@
 const requestCounts = new Map();
 
 // Periodic cleanup of expired rate limit entries every 5 minutes
-setInterval(() => {
+const cleanupTimer = setInterval(() => {
   const now = Date.now();
   for (const [ip, data] of requestCounts.entries()) {
     if (now > data.resetTime) {
@@ -15,6 +15,9 @@ setInterval(() => {
     }
   }
 }, 5 * 60 * 1000);
+if (cleanupTimer && cleanupTimer.unref) {
+  cleanupTimer.unref();
+}
 
 /**
  * Express Rate Limiting Middleware
@@ -77,8 +80,6 @@ function latencyWatchdog(req, res, next) {
 
   res.on('finish', () => {
     const duration = Date.now() - startTime;
-    res.setHeader('X-Response-Time', `${duration}ms`);
-
     // Log warning if API route processing exceeds 2000ms
     if (duration > 2000) {
       console.warn(`[LAG WARNING] High response latency detected: ${duration}ms for ${req.method} ${req.originalUrl}`);

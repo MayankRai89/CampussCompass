@@ -83,10 +83,18 @@ exports.getSocial = async (req, res) => {
       }
     });
 
-    // Add mock social stats to each student to display in the UI
+    const currentUserId = user._id;
+    const myFriends = user.profile.friends || [];
+    const myRequests = user.profile.friendRequests || [];
+
+    // Find profiles of pending incoming friend requests
+    const pendingRequestUsers = students
+      .filter(s => myRequests.includes(s._id))
+      .map(s => s.toJSON());
+
+    // Add mock social stats and friend status to each student
     const studentsWithStats = students.map(studentInstance => {
       const student = studentInstance.toJSON();
-      // Create seed from username length or ID to keep values stable per render
       const seedVal = student._id ? (student._id.charCodeAt(student._id.length - 1) || 42) : 42;
 
       const githubRepos = student.profile.githubUsername
@@ -103,8 +111,20 @@ exports.getSocial = async (req, res) => {
         ? Math.round(150000 + (seedVal * 2432) % 350000)
         : 0;
 
+      let friendStatus = 'none';
+      if (student._id === currentUserId) {
+        friendStatus = 'self';
+      } else if (myFriends.includes(student._id)) {
+        friendStatus = 'friends';
+      } else if (myRequests.includes(student._id)) {
+        friendStatus = 'incoming_request';
+      } else if ((student.profile.friendRequests || []).includes(currentUserId)) {
+        friendStatus = 'sent_request';
+      }
+
       return {
         ...student,
+        friendStatus,
         socialStats: {
           githubRepos,
           githubStars,
@@ -116,14 +136,18 @@ exports.getSocial = async (req, res) => {
 
     const success = req.session.success;
     const error = req.session.error;
+    const info = req.session.info;
     delete req.session.success;
     delete req.session.error;
+    delete req.session.info;
 
     res.render('social', {
       user,
       students: studentsWithStats,
+      pendingRequests: pendingRequestUsers,
       success,
       error,
+      info,
       title: 'Community Connect - CampusCompass'
     });
   } catch (error) {
