@@ -51,7 +51,7 @@ exports.getPlanner = async (req, res) => {
     delete req.session.success;
     delete req.session.error;
 
-    const recentStreakRecord = studySprintService.getRecentStreakRecord(studySprint, 7);
+    const recentStreakRecord = studySprintService.getRecentStreakRecord(studySprint, 28);
 
     res.render('studysprint', {
       title: 'StudySprint Planner - CampusCompass',

@@ -171,9 +171,9 @@ function updateTaskStatus(sprintData, taskId, isCompleted) {
 }
 
 /**
- * Returns recent N days daily tracking streak record for UI display
+ * Returns recent N days daily tracking streak record for UI display (LeetCode style grid)
  */
-function getRecentStreakRecord(sprintData, daysCount = 7) {
+function getRecentStreakRecord(sprintData, daysCount = 28) {
   const history = Array.isArray(sprintData?.streakHistory) ? sprintData.streakHistory : [];
   const schedule = Array.isArray(sprintData?.schedule) ? sprintData.schedule : [];
 
@@ -185,6 +185,7 @@ function getRecentStreakRecord(sprintData, daysCount = 7) {
     d.setDate(today.getDate() - i);
     const dateStr = d.toISOString().split('T')[0];
     const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+    const monthDay = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 
     const historyEntry = history.find(h => h.date === dateStr);
     const scheduledCount = schedule.filter(t => t.dateStr === dateStr).length;
@@ -195,6 +196,8 @@ function getRecentStreakRecord(sprintData, daysCount = 7) {
     result.push({
       dateStr,
       dayName,
+      monthDay,
+      dayOfWeek: d.getDay(),
       isToday: i === 0,
       completed: completedCount > 0,
       tasksCompleted: completedCount,

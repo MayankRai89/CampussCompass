@@ -112,37 +112,94 @@
       </div>
     </div>
 
-    <!-- Daily Tracking Streak Record Banner -->
-    <div style="border: 2px solid var(--border-dark); border-radius: var(--radius); background-color: var(--surface); padding: 20px 24px; box-shadow: var(--shadow-flat); margin-bottom: 36px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px;">
-      <div>
-        <h4 style="font-size: 16px; font-weight: 800; margin: 0 0 4px 0; color: var(--text-heading); display: flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-calendar-check" style="color: #FF6B6B;"></i> Daily Tracking Streak Record
-        </h4>
-        <p style="font-size: 13px; color: var(--text-muted); margin: 0;">
-          Past 7 Days Study Activity &bull; Best Streak Record: <strong><%= Math.max(sprint.maxStreak || 0, sprint.streakCount || 0) %> Days 🏆</strong>
-        </p>
+    <!-- LeetCode Style Daily Streak Tracker -->
+    <div style="border: 2px solid var(--border-dark); border-radius: var(--radius); background-color: var(--surface); padding: 24px; box-shadow: var(--shadow-flat); margin-bottom: 36px;">
+      
+      <!-- Tracker Header & Metrics -->
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1.5px dashed var(--border-dark);">
+        <div>
+          <h4 style="font-size: 17px; font-weight: 800; margin: 0 0 4px 0; color: var(--text-heading); display: flex; align-items: center; gap: 10px;">
+            <i class="fa-solid fa-fire-flame-curved" style="color: #FF6B6B;"></i> LeetCode Daily Streak Activity Tracker
+          </h4>
+          <p style="font-size: 13px; color: var(--text-muted); margin: 0;">
+            Track your daily study commitments over the past 28 days to build a unbroken habit.
+          </p>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <div style="background-color: var(--surface-alt); border: 1.5px solid var(--border-dark); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-fire" style="color: #FF6B6B;"></i> Current: <span style="color: #FF6B6B; font-weight: 800;"><%= sprint.streakCount || 0 %> Days</span>
+          </div>
+          <div style="background-color: var(--surface-alt); border: 1.5px solid var(--border-dark); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-trophy" style="color: #F1C40F;"></i> Record: <span style="color: #F1C40F; font-weight: 800;"><%= Math.max(sprint.maxStreak || 0, sprint.streakCount || 0) %> Days</span>
+          </div>
+          <div style="background-color: var(--surface-alt); border: 1.5px solid var(--border-dark); padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; color: var(--text-heading); display: flex; align-items: center; gap: 6px;">
+            <i class="fa-solid fa-calendar-check" style="color: #2ECC71;"></i> Active Days: <span style="color: #2ECC71; font-weight: 800;"><%= (sprint.streakHistory || []).filter(h => h.tasksCompleted > 0).length %></span>
+          </div>
+        </div>
       </div>
 
-      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
-        <% if (typeof recentStreakRecord !== 'undefined' && Array.isArray(recentStreakRecord)) { %>
-          <% recentStreakRecord.forEach(day => { %>
-            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 8px; border: 1.5px solid <%= day.isToday ? 'var(--primary)' : 'var(--border-dark)' %>; background-color: <%= day.completed ? 'rgba(46, 204, 113, 0.12)' : (day.isToday ? 'var(--surface-alt)' : 'transparent') %>; min-width: 52px;" title="<%= day.dateStr %>: <%= day.tasksCompleted %> module(s) completed">
-              <span style="font-size: 11px; font-weight: 800; color: <%= day.isToday ? 'var(--primary)' : 'var(--text-muted)' %>;"><%= day.dayName %></span>
-              <span style="font-size: 16px;">
+      <!-- LeetCode Square Box Grid -->
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: flex-start;">
+          <% if (typeof recentStreakRecord !== 'undefined' && Array.isArray(recentStreakRecord)) { %>
+            <% recentStreakRecord.forEach((day) => { %>
+              <div 
+                style="
+                  width: 38px; 
+                  height: 38px; 
+                  border-radius: 8px; 
+                  display: flex; 
+                  flex-direction: column;
+                  align-items: center; 
+                  justify-content: center; 
+                  position: relative;
+                  cursor: pointer;
+                  transition: all 0.15s ease;
+                  box-shadow: 1px 1px 0px var(--border-dark);
+                  <% if (day.completed && day.tasksCompleted >= 2) { %>
+                    background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%); 
+                    border: 1.5px solid var(--border-dark); 
+                    color: #FFF;
+                  <% } else if (day.completed) { %>
+                    background-color: #2ECC71; 
+                    border: 1.5px solid var(--border-dark); 
+                    color: #FFF;
+                  <% } else if (day.isToday) { %>
+                    background-color: var(--surface-alt); 
+                    border: 2px solid var(--primary); 
+                    color: var(--primary);
+                  <% } else { %>
+                    background-color: var(--surface-alt); 
+                    border: 1.5px solid var(--border-dark); 
+                    opacity: 0.65;
+                    color: var(--text-muted);
+                  <% } %>
+                " 
+                title="<%= day.monthDay %> (<%= day.dayName %>): <%= day.tasksCompleted %> micro-task(s) completed"
+              >
+                <span style="font-size: 9px; font-weight: 800; line-height: 1;"><%= day.dayName %></span>
                 <% if (day.completed) { %>
-                  🔥
+                  <i class="fa-solid fa-fire" style="font-size: 11px; margin-top: 3px; color: #FFF;"></i>
                 <% } else if (day.isToday) { %>
-                  🎯
+                  <i class="fa-solid fa-crosshair" style="font-size: 10px; margin-top: 3px; color: var(--primary);"></i>
                 <% } else { %>
-                  ⚪
+                  <span style="font-size: 10px; font-weight: 700; opacity: 0.5; margin-top: 1px;">-</span>
                 <% } %>
-              </span>
-              <span style="font-size: 10px; font-weight: 700; color: <%= day.completed ? '#2ECC71' : 'var(--text-muted)' %>;">
-                <%= day.tasksCompleted > 0 ? day.tasksCompleted + ' done' : '-' %>
-              </span>
-            </div>
-          <% }); %>
-        <% } %>
+              </div>
+            <% }); %>
+          <% } %>
+        </div>
+
+        <!-- LeetCode Legend -->
+        <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px; font-size: 11.5px; font-weight: 700; color: var(--text-muted); margin-top: 4px;">
+          <span>Less</span>
+          <div style="width: 16px; height: 16px; border-radius: 4px; background-color: var(--surface-alt); border: 1px solid var(--border-dark); opacity: 0.65;" title="No tasks completed"></div>
+          <div style="width: 16px; height: 16px; border-radius: 4px; background-color: #2ECC71; border: 1px solid var(--border-dark);" title="1 task completed"></div>
+          <div style="width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%); border: 1px solid var(--border-dark);" title="2+ tasks completed"></div>
+          <div style="width: 16px; height: 16px; border-radius: 4px; background-color: var(--surface-alt); border: 2px solid var(--primary);" title="Today"></div>
+          <span>More</span>
+        </div>
       </div>
     </div>
 
