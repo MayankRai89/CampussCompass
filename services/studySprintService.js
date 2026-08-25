@@ -304,11 +304,64 @@ function generateICalendar(sprintData, userName = 'Student') {
   return icsLines.join('\r\n');
 }
 
+/**
+ * Builds a 1-click Google Calendar Web Event creation URL
+ */
+function buildGoogleCalendarUrl({ title, details = '', location = 'CampusCompass App', startTime, endTime }) {
+  const formatGoogleCalendarDate = (dateInput) => {
+    const d = new Date(dateInput);
+    if (isNaN(d.getTime())) return '';
+    return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  };
+
+  const startStr = formatGoogleCalendarDate(startTime || new Date());
+  const endStr = formatGoogleCalendarDate(endTime || new Date(Date.now() + 45 * 60 * 1000));
+
+  const baseUrl = 'https://calendar.google.com/calendar/render?action=TEMPLATE';
+  const params = new URLSearchParams({
+    text: title || 'CampusCompass Study Task',
+    details: details || '',
+    location: location || '',
+    dates: `${startStr}/${endStr}`
+  });
+
+  return `${baseUrl}&${params.toString()}`;
+}
+
+/**
+ * Generates a Google Calendar URL for a specific study sprint task
+ */
+function generateGoogleCalendarUrlForTask(task) {
+  if (!task) return '#';
+  const title = `[CampusCompass] ${task.topicName || 'Study Session'} (Part ${task.sessionIndex || 1}/${task.totalSessions || 1})`;
+  const details = `Semester: ${task.semester || 'N/A'}\nTopic: ${task.topicName || ''}\nDescription: ${task.description || ''}\nResources: ${(task.resources || []).join(', ')}`;
+
+  let start = task.startTime;
+  let end = task.endTime;
+
+  if (!start) {
+    const d = task.dateStr ? new Date(task.dateStr + 'T09:00:00') : new Date();
+    start = d.toISOString();
+    d.setMinutes(d.getMinutes() + (task.durationMinutes || 45));
+    end = d.toISOString();
+  }
+
+  return buildGoogleCalendarUrl({
+    title,
+    details,
+    location: 'CampusCompass StudySprint',
+    startTime: start,
+    endTime: end
+  });
+}
+
 module.exports = {
   generateSchedule,
   updateTaskStatus,
   shiftSprintForExams,
   resumeSprint,
   generateICalendar,
-  getRecentStreakRecord
+  getRecentStreakRecord,
+  buildGoogleCalendarUrl,
+  generateGoogleCalendarUrlForTask
 };

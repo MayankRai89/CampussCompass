@@ -59,6 +59,10 @@
 
       <!-- Action Buttons -->
       <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+        <button type="button" onclick="document.getElementById('gcalModal').style.display='flex'" class="btn" style="border: 2px solid var(--border-dark); background-color: var(--surface); color: var(--text-heading); box-shadow: var(--shadow-flat); font-weight: 700; padding: 10px 18px; border-radius: var(--radius); display: inline-flex; align-items: center; gap: 8px; cursor: pointer;">
+          <i class="fa-brands fa-google" style="color: #4285F4;"></i> Add Custom Event / Reminder
+        </button>
+
         <a href="/studysprint/export-calendar" class="btn btn-outline" style="border: 2px solid var(--border-dark); background-color: var(--surface); color: var(--text-heading); box-shadow: var(--shadow-flat); font-weight: 700; text-decoration: none; padding: 10px 18px; border-radius: var(--radius); display: inline-flex; align-items: center; gap: 8px;">
           <i class="fa-solid fa-calendar-plus" style="color: #4285F4;"></i> Sync Google / iCal
         </a>
@@ -253,13 +257,21 @@
                     </p>
 
                     <% if (task.resources && task.resources.length > 0) { %>
-                      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 8px;">
                         <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted);">Resources:</span>
                         <% task.resources.forEach(resItem => { %>
                           <span style="font-size: 11.5px; background-color: var(--surface-alt); padding: 2px 8px; border-radius: 4px; border: 1px solid var(--border-dark); color: var(--text-heading);">
                             <i class="fa-solid fa-bookmark" style="font-size: 10px; color: var(--primary);"></i> <%= resItem %>
                           </span>
                         <% }); %>
+                      </div>
+                    <% } %>
+
+                    <% if (task.googleCalendarUrl) { %>
+                      <div style="margin-top: 8px;">
+                        <a href="<%= task.googleCalendarUrl %>" target="_blank" style="font-size: 11.5px; font-weight: 700; color: #4285F4; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 6px; border: 1.5px solid rgba(66, 133, 244, 0.3); background-color: rgba(66, 133, 244, 0.08);" title="Add this task to Google Calendar">
+                          <i class="fa-brands fa-google"></i> + Add to Google Calendar
+                        </a>
                       </div>
                     <% } %>
                   </div>
@@ -292,6 +304,11 @@
                   <div>
                     <span style="font-size: 11px; font-weight: 700; color: var(--text-muted);"><%= task.dateStr %></span>
                     <h5 style="font-size: 14.5px; font-weight: 700; margin: 2px 0 0 0; color: var(--text-heading);"><%= task.topicName %> (Part <%= task.sessionIndex %>)</h5>
+                    <% if (task.googleCalendarUrl) { %>
+                      <a href="<%= task.googleCalendarUrl %>" target="_blank" style="font-size: 11px; font-weight: 700; color: #4285F4; text-decoration: none; display: inline-flex; align-items: center; gap: 4px; margin-top: 4px;" title="Add to Google Calendar">
+                        <i class="fa-brands fa-google"></i> + Cal
+                      </a>
+                    <% } %>
                   </div>
                   <form action="/studysprint/toggle-task" method="POST" style="margin: 0;">
                     <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
@@ -325,9 +342,16 @@
                     <span style="font-size: 11px; font-weight: 800; color: var(--primary); text-transform: uppercase;">
                       <%= task.dateStr %>
                     </span>
-                    <span style="font-size: 10.5px; font-weight: 700; background-color: var(--surface-alt); padding: 2px 6px; border-radius: 4px;">
-                      45m
-                    </span>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <% if (task.googleCalendarUrl) { %>
+                        <a href="<%= task.googleCalendarUrl %>" target="_blank" style="font-size: 10.5px; font-weight: 700; color: #4285F4; text-decoration: none; display: inline-flex; align-items: center; gap: 3px;" title="Add to Google Calendar">
+                          <i class="fa-brands fa-google"></i> Cal
+                        </a>
+                      <% } %>
+                      <span style="font-size: 10.5px; font-weight: 700; background-color: var(--surface-alt); padding: 2px 6px; border-radius: 4px;">
+                        45m
+                      </span>
+                    </div>
                   </div>
                   <h5 style="font-size: 13.5px; font-weight: 700; margin: 0 0 2px 0; color: var(--text-heading);">
                     <%= task.topicName %>
@@ -408,5 +432,132 @@
     </form>
   </div>
 </div>
+
+<!-- Custom Google Calendar Event & Notification Modal -->
+<div id="gcalModal" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; padding: 20px;">
+  <div style="background-color: var(--surface); border: 2px solid var(--border-dark); border-radius: var(--radius-lg); box-shadow: var(--shadow-flat); max-width: 500px; width: 100%; padding: 28px; position: relative;">
+    <button onclick="document.getElementById('gcalModal').style.display='none'" style="position: absolute; top: 16px; right: 16px; border: none; background: none; font-size: 20px; cursor: pointer; color: var(--text-muted);">&times;</button>
+
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
+      <div style="width: 44px; height: 44px; border-radius: 12px; background-color: rgba(66, 133, 244, 0.12); color: #4285F4; display: flex; align-items: center; justify-content: center; font-size: 22px; border: 1.5px solid rgba(66, 133, 244, 0.3);">
+        <i class="fa-brands fa-google"></i>
+      </div>
+      <div>
+        <h3 style="font-size: 20px; font-weight: 800; margin: 0; color: var(--text-heading);">Add Custom Event / Reminder</h3>
+        <span style="font-size: 12.5px; color: var(--text-muted);">Schedule any detail, exam date, or study task directly to Google Calendar</span>
+      </div>
+    </div>
+
+    <form id="gcalCustomForm" onsubmit="handleGCalSubmit(event)">
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text-heading);">Event Title / Topic *</label>
+        <input type="text" id="gcalTitle" required placeholder="e.g. Data Structures Mid-Term Exam Prep" class="form-control" style="width: 100%; padding: 10px 14px; border-radius: var(--radius); border: 2px solid var(--border-dark); background-color: var(--surface-alt); font-weight: 600;">
+      </div>
+
+      <div style="margin-bottom: 14px;">
+        <label style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--text-heading);">Details / Notes</label>
+        <textarea id="gcalDetails" rows="2" placeholder="e.g. Review trees, graph algorithms, and dynamic programming problems" class="form-control" style="width: 100%; padding: 10px 14px; border-radius: var(--radius); border: 2px solid var(--border-dark); background-color: var(--surface-alt); font-weight: 600; resize: vertical;"></textarea>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px;">
+        <div>
+          <label style="display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 6px; color: var(--text-heading);">Date *</label>
+          <input type="date" id="gcalDate" required class="form-control" style="width: 100%; padding: 8px 12px; border-radius: var(--radius); border: 2px solid var(--border-dark); background-color: var(--surface-alt); font-weight: 600;">
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 6px; color: var(--text-heading);">Start Time *</label>
+          <input type="time" id="gcalTime" required class="form-control" style="width: 100%; padding: 8px 12px; border-radius: var(--radius); border: 2px solid var(--border-dark); background-color: var(--surface-alt); font-weight: 600;">
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+        <div>
+          <label style="display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 6px; color: var(--text-heading);">Duration</label>
+          <select id="gcalDuration" class="form-control" style="width: 100%; padding: 8px 12px; border-radius: var(--radius); border: 2px solid var(--border-dark); background-color: var(--surface-alt); font-weight: 600;">
+            <option value="15">15 Minutes</option>
+            <option value="30">30 Minutes</option>
+            <option value="45" selected>45 Minutes (Micro-task)</option>
+            <option value="60">1 Hour</option>
+            <option value="120">2 Hours</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 6px; color: var(--text-heading);">Notification Alert</label>
+          <select id="gcalReminder" class="form-control" style="width: 100%; padding: 8px 12px; border-radius: var(--radius); border: 2px solid var(--border-dark); background-color: var(--surface-alt); font-weight: 600;">
+            <option value="10" selected>10 Mins Before</option>
+            <option value="30">30 Mins Before</option>
+            <option value="60">1 Hour Before</option>
+            <option value="1440">1 Day Before</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center;">
+        <button type="button" onclick="document.getElementById('gcalModal').style.display='none'" class="btn" style="border: 2px solid var(--border-dark); background-color: var(--surface-alt); font-weight: 700;">Cancel</button>
+        <button type="submit" class="btn btn-primary" style="font-weight: 700; display: flex; align-items: center; gap: 8px; background-color: #4285F4; border-color: #3367D6;">
+          <i class="fa-brands fa-google"></i> Open in Google Calendar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    const dateInput = document.getElementById("gcalDate");
+    const timeInput = document.getElementById("gcalTime");
+    if (dateInput && !dateInput.value) {
+      dateInput.value = new Date().toISOString().split("T")[0];
+    }
+    if (timeInput && !timeInput.value) {
+      timeInput.value = "10:00";
+    }
+  });
+
+  function handleGCalSubmit(e) {
+    e.preventDefault();
+    const title = document.getElementById("gcalTitle").value.trim();
+    const details = document.getElementById("gcalDetails").value.trim();
+    const dateVal = document.getElementById("gcalDate").value;
+    const timeVal = document.getElementById("gcalTime").value;
+    const durationMins = parseInt(document.getElementById("gcalDuration").value, 10) || 45;
+    const reminderMins = parseInt(document.getElementById("gcalReminder").value, 10) || 10;
+
+    if (!title || !dateVal || !timeVal) return;
+
+    const startDt = new Date(`${dateVal}T${timeVal}:00`);
+    const endDt = new Date(startDt.getTime() + durationMins * 60 * 1000);
+
+    const formatGCalIso = (d) => d.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+    const startIso = formatGCalIso(startDt);
+    const endIso = formatGCalIso(endDt);
+
+    const reminderNote = `[CampusCompass Reminder Alert: Set for ${reminderMins} mins before event]\n\n${details}`;
+
+    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent("[CampusCompass] " + title)}&details=${encodeURIComponent(reminderNote)}&location=${encodeURIComponent("CampusCompass StudySprint")}&dates=${startIso}/${endIso}`;
+
+    if ("Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+      Notification.requestPermission();
+    }
+
+    const msUntilEvent = startDt.getTime() - Date.now() - (reminderMins * 60 * 1000);
+    if (msUntilEvent > 0 && msUntilEvent < 86400000) {
+      setTimeout(() => {
+        if ("Notification" in window && Notification.permission === "granted") {
+          new Notification("🔔 Study Reminder: " + title, {
+            body: `Starting in ${reminderMins} minutes! ${details}`,
+            icon: "/favicon.ico"
+          });
+        }
+        alert(`🔔 Study Reminder Alert: "${title}" is starting in ${reminderMins} minutes!`);
+      }, msUntilEvent);
+    }
+
+    window.open(gcalUrl, "_blank");
+    document.getElementById("gcalModal").style.display = "none";
+  }
+</script>
 
 <%- include('partials/footer') %>

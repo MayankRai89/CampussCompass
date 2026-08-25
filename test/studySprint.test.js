@@ -7,7 +7,9 @@ const {
   shiftSprintForExams,
   resumeSprint,
   generateICalendar,
-  getRecentStreakRecord
+  getRecentStreakRecord,
+  buildGoogleCalendarUrl,
+  generateGoogleCalendarUrlForTask
 } = require('../services/studySprintService');
 
 test('generates study schedule with 45-min micro-tasks for Web Developer track', () => {
@@ -115,20 +117,29 @@ test('resumes a paused study sprint', () => {
   assert.strictEqual(resumed.pausedUntil, null);
 });
 
-test('generates valid RFC 5545 iCalendar (.ics) string', () => {
-  const initial = generateSchedule({
-    careerGoal: 'Data Scientist',
-    dailyStudyHours: 2
+
+
+test('generates valid Google Calendar URL for custom events and sprint tasks', () => {
+  const gcalUrl = buildGoogleCalendarUrl({
+    title: 'Algorithms Exam Prep',
+    details: 'Study tree algorithms',
+    location: 'Library',
+    startTime: '2026-09-01T10:00:00Z',
+    endTime: '2026-09-01T11:00:00Z'
   });
 
-  const sprintData = {
-    schedule: initial.schedule
-  };
+  assert.ok(gcalUrl.includes('https://calendar.google.com/calendar/render?action=TEMPLATE'));
+  assert.ok(gcalUrl.includes('text=Algorithms+Exam+Prep'));
+  assert.ok(gcalUrl.includes('20260901T100000Z%2F20260901T110000Z'));
 
-  const icsStr = generateICalendar(sprintData, 'Test Student');
+  const initial = generateSchedule({
+    careerGoal: 'Web Developer',
+    dailyStudyHours: 2
+  });
+  const firstTask = initial.schedule[0];
+  const taskGCalUrl = generateGoogleCalendarUrlForTask(firstTask);
 
-  assert.ok(icsStr.includes('BEGIN:VCALENDAR'));
-  assert.ok(icsStr.includes('END:VCALENDAR'));
-  assert.ok(icsStr.includes('PRODID:-//CampusCompass//StudySprint 1.0//EN'));
-  assert.ok(icsStr.includes('BEGIN:VEVENT'));
+  assert.ok(taskGCalUrl.includes('https://calendar.google.com/calendar/render?action=TEMPLATE'));
+  assert.ok(taskGCalUrl.includes('CampusCompass'));
+  assert.ok(taskGCalUrl.includes(firstTask.topicName.split(' ')[0]));
 });

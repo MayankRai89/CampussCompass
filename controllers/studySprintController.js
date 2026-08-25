@@ -42,9 +42,14 @@ exports.getPlanner = async (req, res) => {
 
     const schedule = studySprint.schedule || [];
 
-    const todayTasks = schedule.filter(t => t.dateStr === todayStr);
-    const upcomingTasks = schedule.filter(t => t.dateStr > todayStr).slice(0, 10);
-    const pastTasks = schedule.filter(t => t.dateStr < todayStr && !t.completed).slice(0, 5);
+    const augmentTaskWithGCal = (t) => ({
+      ...t,
+      googleCalendarUrl: studySprintService.generateGoogleCalendarUrlForTask(t)
+    });
+
+    const todayTasks = schedule.filter(t => t.dateStr === todayStr).map(augmentTaskWithGCal);
+    const upcomingTasks = schedule.filter(t => t.dateStr > todayStr).slice(0, 10).map(augmentTaskWithGCal);
+    const pastTasks = schedule.filter(t => t.dateStr < todayStr && !t.completed).slice(0, 5).map(augmentTaskWithGCal);
 
     const success = req.session.success;
     const error = req.session.error;
