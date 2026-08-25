@@ -24,6 +24,8 @@ exports.getPlanner = async (req, res) => {
         completedTasks: 0,
         progressPercent: 0,
         streakCount: 0,
+        maxStreak: 0,
+        streakHistory: [],
         isPaused: false,
         pausedUntil: null,
         lastActiveDate: null
@@ -49,6 +51,8 @@ exports.getPlanner = async (req, res) => {
     delete req.session.success;
     delete req.session.error;
 
+    const recentStreakRecord = studySprintService.getRecentStreakRecord(studySprint, 7);
+
     res.render('studysprint', {
       title: 'StudySprint Planner - CampusCompass',
       user,
@@ -57,6 +61,7 @@ exports.getPlanner = async (req, res) => {
       upcomingTasks,
       pastTasks,
       todayStr,
+      recentStreakRecord,
       success,
       error
     });
@@ -87,6 +92,8 @@ exports.setupSprint = async (req, res) => {
       completedTasks: 0,
       progressPercent: 0,
       streakCount: user.profile.studySprint ? (user.profile.studySprint.streakCount || 0) : 0,
+      maxStreak: user.profile.studySprint ? (user.profile.studySprint.maxStreak || user.profile.studySprint.streakCount || 0) : 0,
+      streakHistory: user.profile.studySprint ? (user.profile.studySprint.streakHistory || []) : [],
       isPaused: false,
       pausedUntil: null,
       lastActiveDate: user.profile.studySprint ? user.profile.studySprint.lastActiveDate : null

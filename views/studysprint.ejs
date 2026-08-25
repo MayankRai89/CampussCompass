@@ -82,8 +82,9 @@
           <i class="fa-solid fa-fire"></i>
         </div>
         <div>
-          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Current Streak</span>
-          <h2 style="font-size: 28px; font-weight: 800; margin: 2px 0 0 0; color: var(--text-heading);"><%= sprint.streakCount || 0 %> Days 🔥</h2>
+          <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Active Streak</span>
+          <h2 style="font-size: 26px; font-weight: 800; margin: 2px 0 0 0; color: var(--text-heading);"><%= sprint.streakCount || 0 %> Days 🔥</h2>
+          <span style="font-size: 11.5px; color: var(--text-muted); font-weight: 700;">Record: <%= Math.max(sprint.maxStreak || 0, sprint.streakCount || 0) %> Days 🏆</span>
         </div>
       </div>
 
@@ -108,6 +109,40 @@
           <span style="font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Daily Commitment</span>
           <h2 style="font-size: 26px; font-weight: 800; margin: 2px 0 0 0; color: var(--text-heading);"><%= sprint.dailyStudyHours || 2 %> Hours</h2>
         </div>
+      </div>
+    </div>
+
+    <!-- Daily Tracking Streak Record Banner -->
+    <div style="border: 2px solid var(--border-dark); border-radius: var(--radius); background-color: var(--surface); padding: 20px 24px; box-shadow: var(--shadow-flat); margin-bottom: 36px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 20px;">
+      <div>
+        <h4 style="font-size: 16px; font-weight: 800; margin: 0 0 4px 0; color: var(--text-heading); display: flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-calendar-check" style="color: #FF6B6B;"></i> Daily Tracking Streak Record
+        </h4>
+        <p style="font-size: 13px; color: var(--text-muted); margin: 0;">
+          Past 7 Days Study Activity &bull; Best Streak Record: <strong><%= Math.max(sprint.maxStreak || 0, sprint.streakCount || 0) %> Days 🏆</strong>
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+        <% if (typeof recentStreakRecord !== 'undefined' && Array.isArray(recentStreakRecord)) { %>
+          <% recentStreakRecord.forEach(day => { %>
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 12px; border-radius: 8px; border: 1.5px solid <%= day.isToday ? 'var(--primary)' : 'var(--border-dark)' %>; background-color: <%= day.completed ? 'rgba(46, 204, 113, 0.12)' : (day.isToday ? 'var(--surface-alt)' : 'transparent') %>; min-width: 52px;" title="<%= day.dateStr %>: <%= day.tasksCompleted %> module(s) completed">
+              <span style="font-size: 11px; font-weight: 800; color: <%= day.isToday ? 'var(--primary)' : 'var(--text-muted)' %>;"><%= day.dayName %></span>
+              <span style="font-size: 16px;">
+                <% if (day.completed) { %>
+                  🔥
+                <% } else if (day.isToday) { %>
+                  🎯
+                <% } else { %>
+                  ⚪
+                <% } %>
+              </span>
+              <span style="font-size: 10px; font-weight: 700; color: <%= day.completed ? '#2ECC71' : 'var(--text-muted)' %>;">
+                <%= day.tasksCompleted > 0 ? day.tasksCompleted + ' done' : '-' %>
+              </span>
+            </div>
+          <% }); %>
+        <% } %>
       </div>
     </div>
 
