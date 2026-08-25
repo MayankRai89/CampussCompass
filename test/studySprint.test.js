@@ -6,7 +6,8 @@ const {
   updateTaskStatus,
   shiftSprintForExams,
   resumeSprint,
-  generateICalendar
+  generateICalendar,
+  getRecentStreakRecord
 } = require('../services/studySprintService');
 
 test('generates study schedule with 45-min micro-tasks for Web Developer track', () => {
@@ -48,7 +49,40 @@ test('updates task status and increments streak', () => {
   assert.strictEqual(updated.completedTasks, 1);
   assert.ok(updated.progressPercent > 0);
   assert.strictEqual(updated.streakCount, 1);
+  assert.strictEqual(updated.maxStreak, 1);
+  assert.ok(Array.isArray(updated.streakHistory));
+  assert.strictEqual(updated.streakHistory.length, 1);
   assert.ok(updated.lastActiveDate);
+});
+
+test('records maxStreak and past 7 days daily tracking streak record', () => {
+  const initial = generateSchedule({
+    careerGoal: 'Web Developer',
+    dailyStudyHours: 2
+  });
+
+  const sprintData = {
+    schedule: initial.schedule,
+    completedTasks: 0,
+    totalTasks: initial.schedule.length,
+    progressPercent: 0,
+    streakCount: 3,
+    maxStreak: 3,
+    streakHistory: [],
+    lastActiveDate: null
+  };
+
+  const taskId = initial.schedule[0].id;
+  const updated = updateTaskStatus(sprintData, taskId, true);
+
+  assert.strictEqual(updated.maxStreak, 3);
+  assert.strictEqual(updated.streakHistory.length, 1);
+
+  const recentRecord = getRecentStreakRecord(updated, 7);
+  assert.strictEqual(recentRecord.length, 7);
+  const todayRecord = recentRecord.find(r => r.isToday);
+  assert.ok(todayRecord);
+  assert.strictEqual(todayRecord.completed, true);
 });
 
 test('shifts uncompleted future tasks when exam pause mode is activated', () => {
