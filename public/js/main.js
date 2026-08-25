@@ -813,3 +813,111 @@ function toggleStudentSocialStats(studentId, platform) {
     }
   }
 }
+
+// --- Security & API Lag Monitor Module ---
+(function initSecurityAndLagProtection() {
+  // 1. Automatic Form Double-Submit & Spam Guard
+  document.addEventListener("submit", (e) => {
+    const form = e.target;
+    if (!form || form.tagName !== "FORM") return;
+
+    const submitBtn = form.querySelector(
+      'button[type="submit"], input[type="submit"]',
+    );
+    if (submitBtn && !submitBtn.disabled) {
+      const originalHtml = submitBtn.innerHTML;
+      submitBtn.disabled = true;
+      submitBtn.dataset.originalContent = originalHtml;
+
+      if (submitBtn.tagName === "BUTTON") {
+        submitBtn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`;
+      }
+
+      // Safety fallback: re-enable after 8s if navigation doesn't occur
+      setTimeout(() => {
+        if (submitBtn && submitBtn.disabled) {
+          submitBtn.disabled = false;
+          if (submitBtn.dataset.originalContent) {
+            submitBtn.innerHTML = submitBtn.dataset.originalContent;
+          }
+        }
+      }, 8000);
+    }
+  });
+
+  // 2. Safe Client API Call Wrapper with Latency Watchdog & Timeout
+  window.safeFetch = async function (url, options = {}) {
+    const timeoutMs = options.timeout || 10000;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    const csrfInput = document.querySelector('input[name="_csrf"]');
+    const csrfToken = csrfInput ? csrfInput.value : null;
+
+    options.headers = {
+      "X-Requested-With": "XMLHttpRequest",
+      ...(csrfToken ? { "X-CSRF-Token": csrfToken } : {}),
+      ...(options.headers || {}),
+    };
+    options.signal = controller.signal;
+
+    const startTime = performance.now();
+
+    try {
+      const response = await fetch(url, options);
+      clearTimeout(timer);
+
+      const duration = Math.round(performance.now() - startTime);
+
+      // Lag Detection Warning Toast (if request took > 2500ms)
+      if (duration > 2500) {
+        console.warn(
+          `[LAG MONITOR] Slow API response (${duration}ms) for ${url}`,
+        );
+        showSecurityNotice(
+          "⚠️ Slow network connection detected. Request is taking longer than expected.",
+          "warning",
+        );
+      }
+
+      // Security Rate Limit (429) Handling
+      if (response.status === 429) {
+        showSecurityNotice(
+          "🛑 Security limit reached. Please wait a moment before sending more requests.",
+          "danger",
+        );
+      }
+
+      return response;
+    } catch (err) {
+      clearTimeout(timer);
+      if (err.name === "AbortError") {
+        console.error(
+          `[SECURITY TIMEOUT] API request timed out after ${timeoutMs}ms: ${url}`,
+        );
+        showSecurityNotice(
+          "⏱️ Request timed out due to network lag. Please try again.",
+          "danger",
+        );
+      }
+      throw err;
+    }
+  };
+
+  // Helper function to render security & lag notice toasts
+  function showSecurityNotice(msg, type = "info") {
+    const toast = document.createElement("div");
+    toast.className = `alert alert-${type === "warning" ? "danger" : "info"} alert-dismissible`;
+    toast.style.cssText =
+      "position: fixed; bottom: 24px; right: 24px; z-index: 99999; margin: 0; box-shadow: var(--shadow-flat); border: 2px solid var(--border-dark); max-width: 380px; animation: fadeIn 0.3s ease;";
+    toast.innerHTML = `<span>${msg}</span>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.transition = "all 0.35s ease";
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(10px)";
+      setTimeout(() => toast.remove(), 350);
+    }, 4500);
+  }
+})();

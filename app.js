@@ -8,14 +8,17 @@ const session = require('express-session');
 const crypto = require('crypto');
 const { connectDB, sequelize } = require('./config/db');
 const { csrfProtection } = require('./services/csrfProtection');
-
-
+const { apiRateLimiter, latencyWatchdog, securityHeaders } = require('./services/securityMiddleware');
 
 // Initialize Express App
 const app = express();
 
 // Trust proxy (essential for secure session cookies to work behind Vercel/reverse proxies)
 app.set('trust proxy', 1);
+
+// Apply Security Headers & Latency Watchdog
+app.use(securityHeaders);
+app.use(latencyWatchdog);
 
 // Set up Template Engine (EJS)
 app.set('view engine', 'ejs');
@@ -25,6 +28,9 @@ app.set('views', path.join(__dirname, 'views'));
 // Parse incoming JSON and URL-encoded request bodies
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Apply API Rate Limiter
+app.use(apiRateLimiter({ windowMs: 15 * 60 * 1000, maxRequests: 150 }));
 
 // Lazy Database Connection & Synchronization Middleware
 let dbInitialized = false;
