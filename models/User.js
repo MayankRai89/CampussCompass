@@ -79,6 +79,7 @@ User.init(
           interests: val.interests || [],
           dailyStudyHours: val.dailyStudyHours !== undefined ? val.dailyStudyHours : null,
           githubUsername: val.githubUsername || '',
+          linkedinUsername: val.linkedinUsername || '',
           leetcodeUsername: val.leetcodeUsername || '',
           ...val
         };

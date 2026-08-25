@@ -131,6 +131,50 @@
                 </div>
               <% } %>
             </div>
+
+            <!-- LinkedIn Box -->
+            <div class="my-social-stat-box">
+              <div class="stat-box-platform linkedin" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <div>
+                  <i class="fa-brands fa-linkedin" style="color: #0A66C2;"></i>
+                  <span>LinkedIn</span>
+                </div>
+                <% if (user.profile.linkedinUsername) { %>
+                  <form action="/profile/disconnect" method="POST" style="margin: 0;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="platform" value="linkedin">
+                    <button type="submit" class="btn-disconnect-social" style="font-size: 10px;" title="Disconnect LinkedIn" aria-label="Disconnect LinkedIn"><i class="fa-solid fa-link-slash"></i></button>
+                  </form>
+                <% } %>
+              </div>
+              
+              <% if (user.profile.linkedinUsername) { %>
+                <div class="stat-box-data">
+                  <div class="stat-data-item">
+                    <span class="stat-val"><i class="fa-solid fa-circle-check" style="color: #0A66C2;"></i></span>
+                    <span class="stat-lbl">Connected</span>
+                  </div>
+                </div>
+                <div class="stat-box-user">
+                  <a href="https://linkedin.com/in/<%= user.profile.linkedinUsername %>" target="_blank" style="color: var(--primary); text-decoration: none;">in/<%= user.profile.linkedinUsername %></a>
+                </div>
+              <% } else { %>
+                <div class="stat-box-empty">
+                  <button type="button" class="btn btn-connect-social" onclick="toggleConnectForm('linkedin')" style="font-size: 11px; width: 100%; text-align: center; justify-content: center;"><i class="fa-solid fa-link"></i> Connect LinkedIn</button>
+                  <div id="connect-form-linkedin" class="social-connect-inline-form" style="display: none; margin-top: 8px; padding: 6px;">
+                    <form action="/profile/connect" method="POST">
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                      <input type="hidden" name="platform" value="linkedin">
+                      <div class="social-input-group">
+                        <input type="text" name="username" placeholder="LinkedIn handle/url" required style="padding: 4px 6px; font-size: 11px;">
+                        <button type="submit" class="btn btn-primary btn-xs" style="padding: 2px 6px;">Link</button>
+                        <button type="button" class="btn btn-secondary btn-xs" onclick="toggleConnectForm('linkedin')" style="padding: 2px 6px;" aria-label="Close LinkedIn connect form"><i class="fa-solid fa-xmark"></i></button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              <% } %>
+            </div>
           </div>
         </div>
       </div>
