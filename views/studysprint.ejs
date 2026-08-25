@@ -114,6 +114,51 @@
           <h2 style="font-size: 26px; font-weight: 800; margin: 2px 0 0 0; color: var(--text-heading);"><%= sprint.dailyStudyHours || 2 %> Hours</h2>
         </div>
       </div>
+
+      <!-- Google Calendar Event Box -->
+      <div style="border: 2px solid var(--border-dark); border-radius: var(--radius); background-color: var(--surface); padding: 20px 22px; box-shadow: var(--shadow-flat); display: flex; align-items: center; justify-content: space-between; gap: 16px; position: relative;">
+        <div style="display: flex; align-items: center; gap: 16px; flex: 1; min-width: 0;">
+          <div style="width: 54px; height: 54px; min-width: 54px; border-radius: 14px; background: linear-gradient(135deg, #4285F4 0%, #34A853 100%); color: #FFF; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 2px 2px 0px var(--border-dark);">
+            <i class="fa-solid fa-calendar-day" style="font-size: 20px;"></i>
+            <span style="font-size: 9px; font-weight: 800; text-transform: uppercase; margin-top: 2px;">CAL</span>
+          </div>
+          <div style="min-width: 0; flex: 1;">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; margin-bottom: 2px;">
+              <span style="font-size: 11.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px;">Calendar Event</span>
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <button type="button" onclick="refreshCalendarEventBox(this)" style="background: none; border: none; cursor: pointer; color: var(--text-muted); font-size: 12px; padding: 2px 4px; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; transition: all 0.2s ease;" title="Refresh Calendar Event">
+                  <i class="fa-solid fa-arrows-rotate"></i>
+                </button>
+                <span style="font-size: 10px; font-weight: 800; background-color: rgba(66, 133, 244, 0.12); color: #4285F4; border: 1px solid rgba(66, 133, 244, 0.25); padding: 1px 6px; border-radius: 4px;">
+                  <i class="fa-brands fa-google"></i> Sync
+                </span>
+              </div>
+            </div>
+            <% if (typeof upcomingTasks !== 'undefined' && upcomingTasks.length > 0) { %>
+              <h4 style="font-size: 15px; font-weight: 800; margin: 0; color: var(--text-heading); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="<%= upcomingTasks[0].topicName %>">
+                <%= upcomingTasks[0].topicName %>
+              </h4>
+              <div style="display: flex; align-items: center; gap: 8px; margin-top: 3px;">
+                <span style="font-size: 11.5px; font-weight: 700; color: var(--primary);">
+                  <i class="fa-solid fa-clock" style="font-size: 10px;"></i> <%= upcomingTasks[0].dateStr %>
+                </span>
+                <% if (upcomingTasks[0].googleCalendarUrl) { %>
+                  <a href="<%= upcomingTasks[0].googleCalendarUrl %>" target="_blank" style="font-size: 10.5px; font-weight: 800; color: #4285F4; text-decoration: none;" title="Add to Google Calendar">
+                    + Add <i class="fa-solid fa-arrow-up-right-from-square" style="font-size: 9px;"></i>
+                  </a>
+                <% } %>
+              </div>
+            <% } else { %>
+              <h4 style="font-size: 14.5px; font-weight: 800; margin: 0; color: var(--text-heading);">
+                No Event Scheduled
+              </h4>
+              <button type="button" onclick="document.getElementById('gcalModal').style.display='flex'" style="background: none; border: none; padding: 0; font-size: 11.5px; font-weight: 700; color: #4285F4; cursor: pointer; margin-top: 2px;">
+                + Add Custom Event
+              </button>
+            <% } %>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- LeetCode Style Daily Streak Tracker -->
@@ -557,6 +602,30 @@
 
     window.open(gcalUrl, "_blank");
     document.getElementById("gcalModal").style.display = "none";
+  }
+
+  function refreshCalendarEventBox(btn) {
+    const icon = btn ? (btn.querySelector("i") || btn) : null;
+    if (icon) {
+      icon.style.transition = "transform 0.5s ease";
+      icon.style.transform = "rotate(360deg)";
+      setTimeout(() => {
+        icon.style.transform = "rotate(0deg)";
+      }, 500);
+    }
+
+    const toast = document.createElement("div");
+    toast.className = "alert alert-success alert-dismissible";
+    toast.style.cssText = "position: fixed; top: 80px; right: 24px; z-index: 9999; margin: 0; box-shadow: var(--shadow-flat); border: 2px solid var(--border-dark);";
+    toast.innerHTML = `<i class="fa-brands fa-google" style="color: #4285F4;"></i> <span>Google Calendar event schedule refreshed & synced!</span>`;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.transition = "all 0.35s ease";
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(-10px)";
+      setTimeout(() => toast.remove(), 350);
+    }, 3000);
   }
 </script>
 
