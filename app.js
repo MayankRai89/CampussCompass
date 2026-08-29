@@ -123,8 +123,16 @@ app.use((req, res, _next) => {
 // Start the Express Server outside serverless and test environments.
 if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
   const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`Server is running in ${process.env.NODE_ENV || 'development'} mode on http://localhost:${PORT}`);
+    try {
+      await connectDB();
+      await sequelize.sync();
+      dbInitialized = true;
+      console.log('Database connected and models synchronized successfully.');
+    } catch (error) {
+      console.error('Database connection on startup failed:', error.message);
+    }
   });
 }
 
