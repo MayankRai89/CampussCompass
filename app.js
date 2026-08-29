@@ -10,6 +10,7 @@ const fs = require('fs');
 const SESSION_DIR = path.join(__dirname, 'sessions');
 const crypto = require('crypto');
 const { connectDB, sequelize } = require('./config/db');
+const { preloadContentData } = require('./services/contentDataLoader');
 const { csrfProtection } = require('./services/csrfProtection');
 const { apiRateLimiter, latencyWatchdog, securityHeaders } = require('./services/securityMiddleware');
 
@@ -42,6 +43,7 @@ app.use(async (req, res, next) => {
     try {
       await connectDB();
       await sequelize.sync();
+      await preloadContentData();
       dbInitialized = true;
       console.log('Database connected and models synchronized successfully.');
     } catch (error) {
@@ -128,6 +130,7 @@ if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
     try {
       await connectDB();
       await sequelize.sync();
+      await preloadContentData();
       dbInitialized = true;
       console.log('Database connected and models synchronized successfully.');
     } catch (error) {
