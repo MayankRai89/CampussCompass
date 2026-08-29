@@ -3,7 +3,7 @@ const { getRoadmapData } = require('./contentDataLoader');
 /**
  * Generates a study schedule array based on the user's roadmap, dailyStudyHours, and target date.
  */
-function generateSchedule({ careerGoal, dailyStudyHours = 2, targetDate, startDate = new Date() }) {
+function generateSchedule({ careerGoal, dailyStudyHours = 2, _targetDate, startDate = new Date() }) {
   const roadmap = getRoadmapData(careerGoal);
   if (!roadmap || !roadmap.semesters) {
     return { schedule: [], totalTasks: 0, estimatedDays: 0 };
@@ -38,7 +38,7 @@ function generateSchedule({ careerGoal, dailyStudyHours = 2, targetDate, startDa
   });
 
   // Assign calendar dates to tasks
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
   currentDate.setHours(9, 0, 0, 0); // Start at 9:00 AM
 
   let dayTaskCount = 0;
@@ -86,7 +86,7 @@ function updateTaskStatus(sprintData, taskId, isCompleted) {
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
-  let updatedSchedule = sprintData.schedule.map((task) => {
+  const updatedSchedule = sprintData.schedule.map((task) => {
     if (task.id === taskId) {
       return {
         ...task,
@@ -106,7 +106,7 @@ function updateTaskStatus(sprintData, taskId, isCompleted) {
   let streak = sprintData.streakCount || 0;
   let maxStreak = sprintData.maxStreak || sprintData.bestStreak || streak;
   let lastActiveDate = sprintData.lastActiveDate || null;
-  let streakHistory = Array.isArray(sprintData.streakHistory) ? [...sprintData.streakHistory] : [];
+  const streakHistory = Array.isArray(sprintData.streakHistory) ? [...sprintData.streakHistory] : [];
 
   if (isCompleted && lastActiveDate !== todayStr) {
     const yesterday = new Date();
@@ -271,7 +271,7 @@ function generateICalendar(sprintData, userName = 'Student') {
     return d.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
   };
 
-  let icsLines = [
+  const icsLines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
     'PRODID:-//CampusCompass//StudySprint 1.0//EN',

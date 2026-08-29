@@ -224,7 +224,7 @@ exports.getChatHistory = async (req, res) => {
     const friendMessages = friendUser.profile.chatMessages || [];
 
     // Filter messages exchanged between these two users
-    const allExchanged = [...myMessages, ...friendMessages].filter(msg => 
+    const allExchanged = [...myMessages, ...friendMessages].filter(msg =>
       (msg.senderId === currentUserId && msg.receiverId === friendId) ||
       (msg.senderId === friendId && msg.receiverId === currentUserId)
     );

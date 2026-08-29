@@ -55,7 +55,7 @@ function apiRateLimiter(options = {}) {
 
     if (clientData.count > maxRequests) {
       console.warn(`[SECURITY WARNING] Rate limit exceeded for IP: ${ip} on path: ${req.path}`);
-      
+
       if (req.xhr || req.headers.accept?.includes('json')) {
         return res.status(429).json({
           error: 'Security Rate Limit Exceeded',

@@ -1,4 +1,3 @@
-const User = require('../models/User');
 const studySprintService = require('../services/studySprintService');
 
 exports.getPlanner = async (req, res) => {

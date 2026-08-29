@@ -6,7 +6,6 @@ const {
   updateTaskStatus,
   shiftSprintForExams,
   resumeSprint,
-  generateICalendar,
   getRecentStreakRecord,
   buildGoogleCalendarUrl,
   generateGoogleCalendarUrlForTask
